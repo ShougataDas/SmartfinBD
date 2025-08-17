@@ -1,10 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import {
-    View,
-    ScrollView,
-    StyleSheet,
-    Alert,
-} from 'react-native';
+import React, { useState, useEffect } from "react";
+import { View, ScrollView, StyleSheet, Alert } from "react-native";
 import {
     Button,
     Text,
@@ -14,16 +9,16 @@ import {
     TextInput,
     Divider,
     List,
-} from 'react-native-paper';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
-import { VictoryChart, VictoryLine, VictoryArea, VictoryAxis, VictoryTheme } from 'victory-native';
+} from "react-native-paper";
+import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
+import { CartesianChart, Line, Area, useChartPressState } from "victory-native";
+import { useFont } from "@shopify/react-native-skia";
 
-import { theme, spacing } from '@/constants/theme';
-import { useUserStore } from '@/store/userStore';
-import { InvestmentRecommendationService } from '@/services/investmentRecommendation';
-import { formatCurrency, formatPercentage } from '@/utils/formatters';
-import { InvestmentType, RiskLevel } from '@/types';
+import { theme, spacing } from "@/constants/theme";
+import { useUserStore } from "@/store/userStore";
+import { InvestmentRecommendationService } from "@/services/investmentRecommendation";
+import { formatCurrency, formatPercentage } from "@/utils/formatters";
+import { InvestmentType, RiskLevel, InvestmentStatus } from "@/types";
 
 type RouteParams = {
     InvestmentDetails: {
@@ -33,22 +28,34 @@ type RouteParams = {
 };
 
 export const InvestmentDetailsScreen: React.FC = () => {
-    const route = useRoute<RouteProp<RouteParams, 'InvestmentDetails'>>();
+    const route = useRoute<RouteProp<RouteParams, "InvestmentDetails">>();
     const navigation = useNavigation();
-    const { user, financialProfile, riskAssessment, addInvestment } = useUserStore();
+    const { user, financialProfile, riskAssessment, addInvestment } =
+        useUserStore();
 
-    const [investmentAmount, setInvestmentAmount] = useState('');
-    const [investmentPeriod, setInvestmentPeriod] = useState('5');
-    const [monthlyContribution, setMonthlyContribution] = useState('');
+    const [investmentAmount, setInvestmentAmount] = useState("");
+    const [investmentPeriod, setInvestmentPeriod] = useState("5");
+    const [monthlyContribution, setMonthlyContribution] = useState("");
     const [showProjection, setShowProjection] = useState(false);
 
-    const investmentType = route.params?.investmentType || InvestmentType.SANCHAYAPATRA;
-    const investmentDetails = InvestmentRecommendationService.getInvestmentDetails(investmentType);
+    // Add font and chart press state for the new API - moved to top before any returns
+    const font = useFont(require("@/assets/fonts/SpaceMono-Regular.ttf"), 12);
+    const { state: chartPressState } = useChartPressState({
+        x: 0,
+        y: { y: 0, y0: 0 },
+    });
+
+    const investmentType =
+        route.params?.investmentType || InvestmentType.Sanchayapatra;
+    console.log("investmentType", investmentType);
+    const investmentDetails =
+        InvestmentRecommendationService.getInvestmentDetails(investmentType);
 
     useEffect(() => {
         if (investmentDetails && user && financialProfile) {
             // Set default investment amount based on user's capacity
-            const availableAmount = financialProfile.monthlyIncome - financialProfile.monthlyExpenses;
+            const availableAmount =
+                financialProfile.monthlyIncome - financialProfile.monthlyExpenses;
             const suggestedAmount = Math.max(
                 Math.min(availableAmount * 0.2, 50000),
                 investmentDetails.minInvestment
@@ -68,12 +75,12 @@ export const InvestmentDetailsScreen: React.FC = () => {
 
     const getRiskColor = (risk: RiskLevel): string => {
         switch (risk) {
-            case RiskLevel.LOW:
-                return '#4CAF50';
-            case RiskLevel.MEDIUM:
-                return '#FF9800';
-            case RiskLevel.HIGH:
-                return '#F44336';
+            case RiskLevel.Low:
+                return "#4CAF50";
+            case RiskLevel.Medium:
+                return "#FF9800";
+            case RiskLevel.High:
+                return "#F44336";
             default:
                 return theme.colors.primary;
         }
@@ -81,14 +88,14 @@ export const InvestmentDetailsScreen: React.FC = () => {
 
     const getRiskLabel = (risk: RiskLevel): string => {
         switch (risk) {
-            case RiskLevel.LOW:
-                return 'কম ঝুঁকি';
-            case RiskLevel.MEDIUM:
-                return 'মাঝারি ঝুঁকি';
-            case RiskLevel.HIGH:
-                return 'উচ্চ ঝুঁকি';
+            case RiskLevel.Low:
+                return "কম ঝুঁকি";
+            case RiskLevel.Medium:
+                return "মাঝারি ঝুঁকি";
+            case RiskLevel.High:
+                return "উচ্চ ঝুঁকি";
             default:
-                return 'অজানা';
+                return "অজানা";
         }
     };
 
@@ -99,9 +106,11 @@ export const InvestmentDetailsScreen: React.FC = () => {
 
         if (amount < investmentDetails.minInvestment) {
             Alert.alert(
-                'অপর্যাপ্ত পরিমাণ',
-                `ন্যূনতম বিনিয়োগ ${formatCurrency(investmentDetails.minInvestment)} হতে হবে।`,
-                [{ text: 'ঠিক আছে' }]
+                "অপর্যাপ্ত পরিমাণ",
+                `ন্যূনতম বিনিয়োগ ${formatCurrency(
+                    investmentDetails.minInvestment
+                )} হতে হবে।`,
+                [{ text: "ঠিক আছে" }]
             );
             return;
         }
@@ -122,24 +131,27 @@ export const InvestmentDetailsScreen: React.FC = () => {
 
         if (amount < investmentDetails.minInvestment) {
             Alert.alert(
-                'অপর্যাপ্ত পরিমাণ',
-                `ন্যূনতম বিনিয়োগ ${formatCurrency(investmentDetails.minInvestment)} হতে হবে।`,
-                [{ text: 'ঠিক আছে' }]
+                "অপর্যাপ্ত পরিমাণ",
+                `ন্যূনতম বিনিয়োগ ${formatCurrency(
+                    investmentDetails.minInvestment
+                )} হতে হবে।`,
+                [{ text: "ঠিক আছে" }]
             );
             return;
         }
 
         Alert.alert(
-            'বিনিয়োগ নিশ্চিত করুন',
-            `আপনি কি ${formatCurrency(amount)} টাকা ${investmentDetails.name} এ বিনিয়োগ করতে চান?`,
+            "বিনিয়োগ নিশ্চিত করুন",
+            `আপনি কি ${formatCurrency(amount)} টাকা ${investmentDetails.name
+            } এ বিনিয়োগ করতে চান?`,
             [
-                { text: 'বাতিল', style: 'cancel' },
+                { text: "বাতিল", style: "cancel" },
                 {
-                    text: 'নিশ্চিত করুন',
+                    text: "নিশ্চিত করুন",
                     onPress: () => {
                         const newInvestment = {
                             id: Date.now().toString(),
-                            userId: user?.id || '',
+                            userId: user?.id || "",
                             name: investmentDetails.name,
                             type: investmentDetails.type,
                             amount,
@@ -147,19 +159,35 @@ export const InvestmentDetailsScreen: React.FC = () => {
                             expectedReturn: investmentDetails.expectedReturn,
                             startDate: new Date(),
                             riskLevel: investmentDetails.riskLevel,
-                            status: 'active' as const,
+                            status: InvestmentStatus.Active,
                             description: investmentDetails.description,
                             features: investmentDetails.features,
+                            details: {
+                                institution: investmentDetails.provider,
+                                interestRate: investmentDetails.expectedReturn,
+                            },
+                            performance: {
+                                monthlyReturns: [],
+                                lastUpdated: new Date(),
+                            },
+                            notifications: {
+                                maturityReminder: true,
+                                performanceAlerts: true,
+                                newsUpdates: false,
+                            },
+                            isActive: true,
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
                         };
 
                         addInvestment(newInvestment);
 
                         Alert.alert(
-                            'বিনিয়োগ সফল',
-                            'আপনার বিনিয়োগ সফলভাবে সম্পন্ন হয়েছে।',
+                            "বিনিয়োগ সফল",
+                            "আপনার বিনিয়োগ সফলভাবে সম্পন্ন হয়েছে।",
                             [
                                 {
-                                    text: 'ঠিক আছে',
+                                    text: "ঠিক আছে",
                                     onPress: () => navigation.goBack(),
                                 },
                             ]
@@ -172,11 +200,12 @@ export const InvestmentDetailsScreen: React.FC = () => {
 
     const projection = showProjection ? calculateProjection() : null;
 
-    const chartData = projection?.yearlyBreakdown.map(item => ({
-        x: item.year,
-        y: item.value,
-        y0: item.investment,
-    })) || [];
+    const chartData =
+        projection?.yearlyBreakdown.map((item) => ({
+            x: item.year,
+            y: item.value,
+            y0: item.investment,
+        })) || [];
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -208,8 +237,16 @@ export const InvestmentDetailsScreen: React.FC = () => {
 
                             <Surface style={styles.metricCard}>
                                 <Chip
-                                    style={[styles.riskChip, { backgroundColor: getRiskColor(investmentDetails.riskLevel) }]}
-                                    textStyle={{ color: 'white', fontSize: 12 }}>
+                                    style={[
+                                        styles.riskChip,
+                                        {
+                                            backgroundColor: getRiskColor(
+                                                investmentDetails.riskLevel
+                                            ),
+                                        },
+                                    ]}
+                                    textStyle={{ color: "white", fontSize: 12 }}
+                                >
                                     {getRiskLabel(investmentDetails.riskLevel)}
                                 </Chip>
                             </Surface>
@@ -232,8 +269,10 @@ export const InvestmentDetailsScreen: React.FC = () => {
                         keyboardType="numeric"
                         left={<TextInput.Icon icon="currency-bdt" />}
                         style={styles.input}
-                        helperText={`ন্যূনতম: ${formatCurrency(investmentDetails.minInvestment)}`}
                     />
+                    <Text variant="bodySmall" style={styles.helperText}>
+                        ন্যূনতম: {formatCurrency(investmentDetails.minInvestment)}
+                    </Text>
 
                     <TextInput
                         label="মাসিক অতিরিক্ত বিনিয়োগ (টাকা)"
@@ -242,8 +281,10 @@ export const InvestmentDetailsScreen: React.FC = () => {
                         keyboardType="numeric"
                         left={<TextInput.Icon icon="calendar-month" />}
                         style={styles.input}
-                        helperText="ঐচ্ছিক - নিয়মিত মাসিক বিনিয়োগ"
                     />
+                    <Text variant="bodySmall" style={styles.helperText}>
+                        ঐচ্ছিক - নিয়মিত মাসিক বিনিয়োগ
+                    </Text>
 
                     <TextInput
                         label="বিনিয়োগের মেয়াদ (বছর)"
@@ -258,7 +299,8 @@ export const InvestmentDetailsScreen: React.FC = () => {
                         mode="contained"
                         onPress={calculateProjection}
                         style={styles.calculateButton}
-                        icon="calculator">
+                        icon="calculator"
+                    >
                         প্রজেকশন দেখুন
                     </Button>
                 </Card.Content>
@@ -306,25 +348,34 @@ export const InvestmentDetailsScreen: React.FC = () => {
                             <Text variant="titleMedium" style={styles.chartTitle}>
                                 বৃদ্ধির চার্ট
                             </Text>
-                            <VictoryChart
-                                theme={VictoryTheme.material}
-                                height={200}
-                                padding={{ left: 60, top: 20, right: 40, bottom: 40 }}>
-                                <VictoryAxis dependentAxis tickFormat={(x) => `${x / 1000}K`} />
-                                <VictoryAxis />
-                                <VictoryArea
-                                    data={chartData}
-                                    style={{
-                                        data: { fill: theme.colors.primaryContainer, fillOpacity: 0.6 }
-                                    }}
-                                />
-                                <VictoryLine
-                                    data={chartData.map(d => ({ x: d.x, y: d.y0 }))}
-                                    style={{
-                                        data: { stroke: theme.colors.primary, strokeWidth: 2 }
-                                    }}
-                                />
-                            </VictoryChart>
+                            <CartesianChart
+                                data={chartData}
+                                xKey="x"
+                                yKeys={["y", "y0"]}
+                                axisOptions={{
+                                    font: font,
+                                    formatYLabel: (value: number) =>
+                                        `${(value / 1000).toFixed(0)}K`,
+                                    formatXLabel: (value: number) => `${value}Y`,
+                                }}
+                                chartPressState={chartPressState}
+                            >
+                                {({ points }) => (
+                                    <>
+                                        <Area
+                                            points={points.y}
+                                            y0={0}
+                                            color={theme.colors.primaryContainer}
+                                            opacity={0.6}
+                                        />
+                                        <Line
+                                            points={points.y0}
+                                            color={theme.colors.primary}
+                                            strokeWidth={2}
+                                        />
+                                    </>
+                                )}
+                            </CartesianChart>
                         </View>
                     </Card.Content>
                 </Card>
@@ -383,25 +434,25 @@ export const InvestmentDetailsScreen: React.FC = () => {
                     <List.Item
                         title="ন্যূনতম বিনিয়োগ"
                         description={formatCurrency(investmentDetails.minInvestment)}
-                        left={props => <List.Icon {...props} icon="currency-bdt" />}
+                        left={(props) => <List.Icon {...props} icon="currency-bdt" />}
                     />
 
                     <List.Item
                         title="তরলতা"
                         description={`${investmentDetails.liquidityDays} দিন`}
-                        left={props => <List.Icon {...props} icon="clock-outline" />}
+                        left={(props) => <List.Icon {...props} icon="clock-outline" />}
                     />
 
                     <List.Item
                         title="কর সুবিধা"
-                        description={investmentDetails.taxBenefit ? 'হ্যাঁ' : 'না'}
-                        left={props => <List.Icon {...props} icon="receipt" />}
+                        description={investmentDetails.taxBenefit ? "হ্যাঁ" : "না"}
+                        left={(props) => <List.Icon {...props} icon="receipt" />}
                     />
 
                     <List.Item
                         title="প্রদানকারী"
                         description={investmentDetails.provider}
-                        left={props => <List.Icon {...props} icon="bank" />}
+                        left={(props) => <List.Icon {...props} icon="bank" />}
                     />
                 </Card.Content>
             </Card>
@@ -414,12 +465,14 @@ export const InvestmentDetailsScreen: React.FC = () => {
                         onPress={handleInvest}
                         style={styles.investButton}
                         icon="plus-circle"
-                        contentStyle={styles.investButtonContent}>
+                        contentStyle={styles.investButtonContent}
+                    >
                         এখনই বিনিয়োগ করুন
                     </Button>
 
                     <Text variant="bodySmall" style={styles.disclaimer}>
-                        * এটি একটি ডেমো অ্যাপ। প্রকৃত বিনিয়োগের জন্য সংশ্লিষ্ট প্রতিষ্ঠানের সাথে যোগাযোগ করুন।
+                        * এটি একটি ডেমো অ্যাপ। প্রকৃত বিনিয়োগের জন্য সংশ্লিষ্ট প্রতিষ্ঠানের
+                        সাথে যোগাযোগ করুন।
                     </Text>
                 </Card.Content>
             </Card>
@@ -440,37 +493,37 @@ const styles = StyleSheet.create({
         gap: spacing.md,
     },
     titleSection: {
-        alignItems: 'center',
+        alignItems: "center",
     },
     title: {
-        fontWeight: 'bold',
+        fontWeight: "bold",
         color: theme.colors.onSurface,
-        textAlign: 'center',
+        textAlign: "center",
     },
     subtitle: {
         color: theme.colors.onSurfaceVariant,
-        fontStyle: 'italic',
+        fontStyle: "italic",
         marginTop: spacing.xs,
     },
     description: {
         color: theme.colors.onSurfaceVariant,
-        textAlign: 'center',
+        textAlign: "center",
         marginTop: spacing.sm,
         paddingHorizontal: spacing.md,
     },
     metricsSection: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
+        flexDirection: "row",
+        justifyContent: "space-around",
+        alignItems: "center",
     },
     metricCard: {
         padding: spacing.md,
         borderRadius: theme.roundness,
-        alignItems: 'center',
+        alignItems: "center",
         backgroundColor: theme.colors.surfaceVariant,
     },
     metricValue: {
-        fontWeight: 'bold',
+        fontWeight: "bold",
         color: theme.colors.primary,
     },
     metricLabel: {
@@ -485,7 +538,7 @@ const styles = StyleSheet.create({
         marginTop: spacing.sm,
     },
     sectionTitle: {
-        fontWeight: 'bold',
+        fontWeight: "bold",
         color: theme.colors.onSurface,
         marginBottom: spacing.md,
     },
@@ -501,15 +554,15 @@ const styles = StyleSheet.create({
         marginTop: spacing.sm,
     },
     projectionSummary: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
+        flexDirection: "row",
+        justifyContent: "space-around",
         marginBottom: spacing.lg,
     },
     projectionItem: {
-        alignItems: 'center',
+        alignItems: "center",
     },
     projectionValue: {
-        fontWeight: 'bold',
+        fontWeight: "bold",
         color: theme.colors.primary,
     },
     projectionLabel: {
@@ -517,10 +570,10 @@ const styles = StyleSheet.create({
         marginTop: spacing.xs,
     },
     chartContainer: {
-        alignItems: 'center',
+        alignItems: "center",
     },
     chartTitle: {
-        fontWeight: 'bold',
+        fontWeight: "bold",
         color: theme.colors.onSurface,
         marginBottom: spacing.sm,
     },
@@ -529,8 +582,8 @@ const styles = StyleSheet.create({
         marginTop: spacing.sm,
     },
     featuresGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
+        flexDirection: "row",
+        flexWrap: "wrap",
         gap: spacing.xs,
         marginBottom: spacing.md,
     },
@@ -546,8 +599,8 @@ const styles = StyleSheet.create({
     },
     prosSection: {},
     prosTitle: {
-        fontWeight: 'bold',
-        color: '#4CAF50',
+        fontWeight: "bold",
+        color: "#4CAF50",
         marginBottom: spacing.sm,
     },
     proItem: {
@@ -556,8 +609,8 @@ const styles = StyleSheet.create({
     },
     consSection: {},
     consTitle: {
-        fontWeight: 'bold',
-        color: '#FF9800',
+        fontWeight: "bold",
+        color: "#FF9800",
         marginBottom: spacing.sm,
     },
     conItem: {
@@ -582,10 +635,14 @@ const styles = StyleSheet.create({
         paddingVertical: spacing.xs,
     },
     disclaimer: {
-        textAlign: 'center',
+        textAlign: "center",
         color: theme.colors.onSurfaceVariant,
         marginTop: spacing.md,
-        fontStyle: 'italic',
+        fontStyle: "italic",
+    },
+    helperText: {
+        color: theme.colors.onSurfaceVariant,
+        marginTop: spacing.xs,
+        marginBottom: spacing.md,
     },
 });
-
