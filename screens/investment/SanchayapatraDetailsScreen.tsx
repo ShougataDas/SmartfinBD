@@ -84,7 +84,7 @@ const sanchayapatraTypes: SanchayapatraType[] = [
 export const SanchayapatraDetailsScreen: React.FC = () => {
     const navigation = useNavigation();
     const { user, financialProfile, addInvestment } = useUserStore();
-    
+
     const [selectedType, setSelectedType] = useState<SanchayapatraType>(sanchayapatraTypes[0]);
     const [investmentAmount, setInvestmentAmount] = useState('');
     const [showCalculator, setShowCalculator] = useState(false);
@@ -93,7 +93,7 @@ export const SanchayapatraDetailsScreen: React.FC = () => {
         const futureValue = amount * Math.pow(1 + rate / 100, years);
         const totalReturn = futureValue - amount;
         const monthlyReturn = totalReturn / (years * 12);
-        
+
         return {
             futureValue: Math.round(futureValue),
             totalReturn: Math.round(totalReturn),
