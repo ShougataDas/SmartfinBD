@@ -11,6 +11,7 @@ import {
   FAB,
 } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { useNavigation } from "@react-navigation/native";
 
 import { theme, spacing } from "@/constants/theme";
 import { formatCurrency } from "@/utils/formatters";
@@ -28,6 +29,7 @@ interface InvestmentOption {
 }
 
 const InvestmentScreen: React.FC = () => {
+  const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
@@ -232,7 +234,11 @@ const InvestmentScreen: React.FC = () => {
                 <View style={styles.cardActions}>
                   <Button
                     mode="outlined"
-                    onPress={() => {}}
+                    onPress={() => {
+                      if (investment.id === "1") {
+                        navigation.navigate("SanchayapatraDetails" as never);
+                      }
+                    }}
                     style={styles.detailsButton}
                   >
                     বিস্তারিত
