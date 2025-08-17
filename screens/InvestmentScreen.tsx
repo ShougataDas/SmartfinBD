@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 
 import { theme, spacing } from "@/constants/theme";
 import { formatCurrency } from "@/utils/formatters";
+import { InvestmentType } from "@/types";
 
 interface InvestmentOption {
   id: string;
@@ -235,9 +236,31 @@ const InvestmentScreen: React.FC = () => {
                   <Button
                     mode="outlined"
                     onPress={() => {
-                      if (investment.id === "1") {
-                        navigation.navigate("SanchayapatraDetails" as never);
+                      // Map investment name to InvestmentType enum
+                      let investmentType: InvestmentType;
+                      switch (investment.name) {
+                        case "সঞ্চয়পত্র":
+                          investmentType = InvestmentType.Sanchayapatra;
+                          break;
+                        case "DPS":
+                          investmentType = InvestmentType.DPS;
+                          break;
+                        case "মিউচুয়াল ফান্ড":
+                          investmentType = InvestmentType.MutualFund;
+                          break;
+                        case "স্টক মার্কেট":
+                          investmentType = InvestmentType.Stock;
+                          break;
+                        case "ফিক্সড ডিপোজিট":
+                          investmentType = InvestmentType.FixedDeposit;
+                          break;
+                        default:
+                          investmentType = InvestmentType.Sanchayapatra;
                       }
+
+                      (navigation.navigate as any)("InvestmentDetails", {
+                        investmentType,
+                      });
                     }}
                     style={styles.detailsButton}
                   >
