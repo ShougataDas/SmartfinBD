@@ -13,6 +13,7 @@ import { RegisterScreen } from "@/screens/auth/RegisterScreen";
 import { FinancialProfileScreen } from "@/screens/profile/FinancialProfileScreen";
 import { RiskAssessmentScreen } from "@/screens/profile/RiskAssessmentScreen";
 import { InvestmentDetailsScreen } from "@/screens/investment/InvestmentDetailsScreen";
+import { SanchayapatraDetailsScreen } from "@/screens/investment/SanchayapatraDetailsScreen";
 
 import { theme } from "@/constants/theme";
 import { useAuthStore } from "@/store/authStore";
@@ -24,6 +25,7 @@ export type RootStackParamList = {
   FinancialProfile: undefined;
   RiskAssessment: undefined;
   InvestmentDetails: { investmentId: string };
+  SanchayapatraDetails: undefined;
 };
 
 export type AuthStackParamList = {
@@ -171,6 +173,16 @@ export const AppNavigator: React.FC = () => {
             options={{
               headerShown: true,
               title: "বিনিয়োগের বিস্তারিত",
+              headerStyle: { backgroundColor: theme.colors.primary },
+              headerTintColor: theme.colors.onPrimary,
+            }}
+          />
+          <Stack.Screen
+            name="SanchayapatraDetails"
+            component={SanchayapatraDetailsScreen}
+            options={{
+              headerShown: true,
+              title: "সঞ্চয়পত্র বিস্তারিত",
               headerStyle: { backgroundColor: theme.colors.primary },
               headerTintColor: theme.colors.onPrimary,
             }}
