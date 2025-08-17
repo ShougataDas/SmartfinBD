@@ -140,10 +140,26 @@ export const SanchayapatraDetailsScreen: React.FC = () => {
                             expectedReturn: selectedType.interestRate,
                             startDate: new Date(),
                             maturityDate: new Date(Date.now() + selectedType.tenure * 365 * 24 * 60 * 60 * 1000),
-                            riskLevel: RiskLevel.Low,
                             status: 'active' as const,
-                            description: selectedType.nameEn,
-                            features: selectedType.features,
+                            riskLevel: RiskLevel.Low,
+                            details: {
+                                institution: 'Bangladesh Bank',
+                                certificateNumber: `SB${Date.now()}`,
+                                interestRate: selectedType.interestRate,
+                            },
+                            performance: {
+                                monthlyReturns: [],
+                                lastUpdated: new Date(),
+                            },
+                            notifications: {
+                                maturityReminder: true,
+                                performanceAlerts: true,
+                            },
+                            notes: selectedType.nameEn,
+                            tags: selectedType.features,
+                            isActive: true,
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
                         };
 
                         addInvestment(newInvestment);
