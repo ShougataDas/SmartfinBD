@@ -36,7 +36,7 @@ export const InvestmentDetailsScreen: React.FC = () => {
     const [investmentAmount, setInvestmentAmount] = useState("");
     const [investmentPeriod, setInvestmentPeriod] = useState("5");
     const [monthlyContribution, setMonthlyContribution] = useState("");
-    const [projection, setProjection] = useState<any>(null);
+    const [showProjection, setShowProjection] = useState(false);
 
     // Add font and chart press state for the new API - moved to top before any returns
     const font = useFont(require("@/assets/fonts/SpaceMono-Regular.ttf"), 12);
@@ -51,79 +51,27 @@ export const InvestmentDetailsScreen: React.FC = () => {
     const investmentDetails =
         InvestmentRecommendationService.getInvestmentDetails(investmentType);
 
-    const calculateProjection = useCallback(() => {
-        if (!investmentDetails) return;
+  useEffect(() => {
+    if (investmentDetails && user && financialProfile) {
+      // Set default investment amount based on user's capacity
+      const availableAmount =
+        financialProfile.monthlyIncome - financialProfile.monthlyExpenses;
+      const suggestedAmount = Math.max(
+        Math.min(availableAmount * 0.2, 50000),
+        investmentDetails.minInvestment
+      );
+      setInvestmentAmount(suggestedAmount.toString());
+      setMonthlyContribution((availableAmount * 0.1).toString());
+    }
+  }, [investmentDetails, user, financialProfile]);
 
-        const amount = parseFloat(investmentAmount) || 0;
-        const monthly = parseFloat(monthlyContribution) || 0;
-        const years = parseInt(investmentPeriod) || 5;
-
-        if (amount < investmentDetails.minInvestment) {
-            Alert.alert(
-                "অপর্যাপ্ত পরিমাণ",
-                `ন্যূনতম বিনিয়োগ ${formatCurrency(
-                    investmentDetails.minInvestment
-                )} হতে হবে।`,
-                [{ text: "ঠিক আছে" }]
-            );
-            return;
-        }
-
-        const calculatedProjection =
-            InvestmentRecommendationService.calculateProjection(
-                amount,
-                investmentDetails.expectedReturn,
-                years,
-                monthly
-            );
-
-        setProjection(calculatedProjection);
-    }, [
-        investmentAmount,
-        monthlyContribution,
-        investmentPeriod,
-        investmentDetails,
-    ]);
-
-    // const chartData = useMemo(() => {
-    //     const data =
-    //         projection?.yearlyBreakdown.map((item: any) => ({
-    //             x: item.year,
-    //             y: item.value,
-    //             y0: item.investment,
-    //         })) || [];
-    //     return data;
-    // }, [projection]);
-    type ChartPoint = {
-        x: number;
-        y: number;
-        y0: number;
-    };
-
-    const chartData: ChartPoint[] = useMemo(() => {
+    if (!investmentDetails) {
         return (
-            projection?.yearlyBreakdown.map((item: any) => ({
-                x: item.year,
-                y: item.value,
-                y0: item.investment,
-            })) || []
+            <View style={styles.container}>
+                <Text>বিনিয়োগের তথ্য পাওয়া যায়নি</Text>
+            </View>
         );
-    }, [projection]);
-
-    useEffect(() => {
-        if (investmentDetails && user && financialProfile) {
-            // Set default investment amount based on user's capacity
-            const availableAmount =
-                financialProfile.monthlyIncome - financialProfile.monthlyExpenses;
-            const suggestedAmount = Math.max(
-                Math.min(availableAmount * 0.2, 50000),
-                investmentDetails.minInvestment
-            );
-            setInvestmentAmount(suggestedAmount.toString());
-            setMonthlyContribution((availableAmount * 0.1).toString());
-        }
-    }, [investmentDetails, user, financialProfile]);
-
+    }
     if (!investmentDetails) {
         return (
             <View style={styles.container}>
@@ -156,6 +104,33 @@ export const InvestmentDetailsScreen: React.FC = () => {
             default:
                 return "অজানা";
         }
+    };
+
+    const calculateProjection = () => {
+        const amount = parseFloat(investmentAmount) || 0;
+        const monthly = parseFloat(monthlyContribution) || 0;
+        const years = parseInt(investmentPeriod) || 5;
+
+        if (amount < investmentDetails.minInvestment) {
+            Alert.alert(
+                "অপর্যাপ্ত পরিমাণ",
+                `ন্যূনতম বিনিয়োগ ${formatCurrency(
+                    investmentDetails.minInvestment
+                )} হতে হবে।`,
+                [{ text: "ঠিক আছে" }]
+            );
+            return;
+        }
+
+        const projection = InvestmentRecommendationService.calculateProjection(
+            amount,
+            investmentDetails.expectedReturn,
+            years,
+            monthly
+        );
+
+        setShowProjection(true);
+        return projection;
     };
 
     const handleInvest = () => {
@@ -229,6 +204,15 @@ export const InvestmentDetailsScreen: React.FC = () => {
             ]
         );
     };
+
+    const projection = showProjection ? calculateProjection() : null;
+
+    const chartData =
+        projection?.yearlyBreakdown.map((item) => ({
+            x: item.year,
+            y: item.value,
+            y0: item.investment,
+        })) || [];
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -371,17 +355,17 @@ export const InvestmentDetailsScreen: React.FC = () => {
                             <Text variant="titleMedium" style={styles.chartTitle}>
                                 বৃদ্ধির চার্ট
                             </Text>
-                            <CartesianChart<ChartPoint, "x", "y" | "y0">
+                            <CartesianChart
                                 data={chartData}
                                 xKey="x"
                                 yKeys={["y", "y0"]}
                                 axisOptions={{
-                                    font,
-                                    formatYLabel: (value: unknown) =>
-                                        `${((value as number) / 1000).toFixed(0)}K`,
-                                    formatXLabel: (value: unknown) => `${value as number}Y`,
+                                    font: font,
+                                    formatYLabel: (value: number) =>
+                                        `${(value / 1000).toFixed(0)}K`,
+                                    formatXLabel: (value: number) => `${value}Y`,
                                 }}
-                                chartPressState={chartPressState as any}
+                                chartPressState={chartPressState}
                             >
                                 {({ points }) => (
                                     <>
@@ -399,7 +383,6 @@ export const InvestmentDetailsScreen: React.FC = () => {
                                     </>
                                 )}
                             </CartesianChart>
-
                         </View>
                     </Card.Content>
                 </Card>
@@ -578,8 +561,8 @@ const styles = StyleSheet.create({
         marginTop: spacing.sm,
     },
     projectionSummary: {
-        flexDirection: "column",
-        gap: spacing.md,
+        flexDirection: "row",
+        justifyContent: "space-around",
         marginBottom: spacing.lg,
     },
     projectionItem: {
@@ -595,7 +578,6 @@ const styles = StyleSheet.create({
     },
     chartContainer: {
         alignItems: "center",
-        height: 300,
     },
     chartTitle: {
         fontWeight: "bold",
