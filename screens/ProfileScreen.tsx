@@ -13,6 +13,7 @@ import {
   Switch,
 } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { useNavigation } from "@react-navigation/native";
 
 import { theme, spacing } from "@/constants/theme";
 import { useUserStore } from "@/store/userStore";
@@ -20,6 +21,7 @@ import { useAuthStore } from "@/store/authStore";
 import { formatCurrency } from "@/utils/formatters";
 
 const ProfileScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { user, updateUser } = useUserStore();
   const { logout } = useAuthStore();
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
@@ -32,6 +34,56 @@ const ProfileScreen: React.FC = () => {
     ]);
   };
 
+  const handleEditProfile = () => {
+    Alert.alert(
+      "প্রোফাইল সম্পাদনা",
+      "এই ফিচারটি শীঘ্রই আসছে।",
+      [{ text: "ঠিক আছে" }]
+    );
+  };
+
+  const handleFinancialProfile = () => {
+    navigation.navigate("FinancialProfile" as never);
+  };
+
+  const handleRiskAssessment = () => {
+    navigation.navigate("RiskAssessment" as never);
+  };
+
+  const handleInvestmentGoals = () => {
+    Alert.alert(
+      "বিনিয়োগ লক্ষ্য",
+      "এই ফিচারটি শীঘ্রই আসছে।",
+      [{ text: "ঠিক আছে" }]
+    );
+  };
+
+  const handleReportsAnalytics = () => {
+    Alert.alert(
+      "রিপোর্ট ও বিশ্লেষণ",
+      "এই ফিচারটি শীঘ্রই আসছে।",
+      [{ text: "ঠিক আছে" }]
+    );
+  };
+
+  const handleSecurity = () => {
+    Alert.alert(
+      "নিরাপত্তা সেটিংস",
+      "এই ফিচারটি শীঘ্রই আসছে।",
+      [{ text: "ঠিক আছে" }]
+    );
+  };
+
+  const handleHelpSupport = () => {
+    Alert.alert(
+      "সাহায্য ও সহায়তা",
+      "যোগাযোগ করুন:\n\nইমেইল: support@smartfinbd.com\nফোন: +880 1XXX-XXXXXX\n\nঅথবা আমাদের AI চ্যাটবট ব্যবহার করুন।",
+      [
+        { text: "চ্যাটবট", onPress: () => navigation.navigate("Chat" as never) },
+        { text: "ঠিক আছে" }
+      ]
+    );
+  };
   const profileStats = [
     {
       title: "মোট বিনিয়োগ",
@@ -58,37 +110,37 @@ const ProfileScreen: React.FC = () => {
       title: "আর্থিক প্রোফাইল",
       description: "আপনার আর্থিক তথ্য আপডেট করুন",
       icon: "account-edit",
-      onPress: () => {},
+      onPress: handleFinancialProfile,
     },
     {
       title: "ঝুঁকি মূল্যায়ন",
       description: "আপনার ঝুঁকি নেওয়ার ক্ষমতা পরীক্ষা করুন",
       icon: "scale-balance",
-      onPress: () => {},
+      onPress: handleRiskAssessment,
     },
     {
       title: "বিনিয়োগ লক্ষ্য",
       description: "আপনার আর্থিক লক্ষ্য নির্ধারণ করুন",
       icon: "bullseye-arrow",
-      onPress: () => {},
+      onPress: handleInvestmentGoals,
     },
     {
       title: "রিপোর্ট ও বিশ্লেষণ",
       description: "আপনার বিনিয়োগের বিস্তারিত রিপোর্ট",
       icon: "file-chart",
-      onPress: () => {},
+      onPress: handleReportsAnalytics,
     },
     {
       title: "নিরাপত্তা",
       description: "পাসওয়ার্ড ও নিরাপত্তা সেটিংস",
       icon: "shield-account",
-      onPress: () => {},
+      onPress: handleSecurity,
     },
     {
       title: "সাহায্য ও সহায়তা",
       description: "সাহায্য কেন্দ্র ও যোগাযোগ",
       icon: "help-circle",
-      onPress: () => {},
+      onPress: handleHelpSupport,
     },
   ];
 
@@ -114,7 +166,7 @@ const ProfileScreen: React.FC = () => {
         </View>
         <Button
           mode="outlined"
-          onPress={() => {}}
+          onPress={handleEditProfile}
           style={styles.editButton}
           icon="pencil"
         >
@@ -139,6 +191,53 @@ const ProfileScreen: React.FC = () => {
         ))}
       </View>
 
+      {/* Quick Actions */}
+      <Card style={styles.quickActionsCard}>
+        <Card.Content>
+          <Title style={styles.sectionTitle}>দ্রুত কার্যক্রম</Title>
+          <View style={styles.quickActionsGrid}>
+            <Surface
+              style={styles.quickActionItem}
+              onTouchEnd={handleFinancialProfile}
+            >
+              <Icon name="account-edit" size={32} color={theme.colors.primary} />
+              <Text variant="bodyMedium" style={styles.quickActionText}>
+                প্রোফাইল আপডেট
+              </Text>
+            </Surface>
+
+            <Surface
+              style={styles.quickActionItem}
+              onTouchEnd={handleRiskAssessment}
+            >
+              <Icon name="scale-balance" size={32} color={theme.colors.secondary} />
+              <Text variant="bodyMedium" style={styles.quickActionText}>
+                ঝুঁকি মূল্যায়ন
+              </Text>
+            </Surface>
+
+            <Surface
+              style={styles.quickActionItem}
+              onTouchEnd={() => navigation.navigate("Chat" as never)}
+            >
+              <Icon name="robot" size={32} color={theme.colors.tertiary} />
+              <Text variant="bodyMedium" style={styles.quickActionText}>
+                AI সহায়তা
+              </Text>
+            </Surface>
+
+            <Surface
+              style={styles.quickActionItem}
+              onTouchEnd={handleHelpSupport}
+            >
+              <Icon name="help-circle" size={32} color={theme.colors.outline} />
+              <Text variant="bodyMedium" style={styles.quickActionText}>
+                সাহায্য
+              </Text>
+            </Surface>
+          </View>
+        </Card.Content>
+      </Card>
       {/* Menu Items */}
       <Card style={styles.menuCard}>
         <Card.Content>
@@ -219,7 +318,7 @@ const ProfileScreen: React.FC = () => {
               />
             )}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => {}}
+            onPress={() => Alert.alert("ভাষা", "এই ফিচারটি শীঘ্রই আসছে।", [{ text: "ঠিক আছে" }])}
             style={styles.menuItem}
           />
         </Card.Content>
@@ -241,7 +340,11 @@ const ProfileScreen: React.FC = () => {
               />
             )}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => {}}
+            onPress={() => Alert.alert(
+              "SmartFin BD",
+              "সংস্করণ: 1.0.0\n\nবাংলাদেশের প্রথম AI চালিত ব্যক্তিগত আর্থিক পরামর্শদাতা অ্যাপ।\n\nডেভেলপার: SmartFin BD Team\nইমেইল: info@smartfinbd.com",
+              [{ text: "ঠিক আছে" }]
+            )}
             style={styles.menuItem}
           />
 
@@ -258,7 +361,11 @@ const ProfileScreen: React.FC = () => {
               />
             )}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => {}}
+            onPress={() => Alert.alert(
+              "গোপনীয়তা নীতি",
+              "আমরা আপনার ব্যক্তিগত তথ্যের নিরাপত্তা ও গোপনীয়তা রক্ষায় প্রতিশ্রুতিবদ্ধ।\n\nবিস্তারিত জানতে আমাদের ওয়েবসাইট দেখুন।",
+              [{ text: "ঠিক আছে" }]
+            )}
             style={styles.menuItem}
           />
 
@@ -275,7 +382,11 @@ const ProfileScreen: React.FC = () => {
               />
             )}
             right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => {}}
+            onPress={() => Alert.alert(
+              "ব্যবহারের শর্তাবলী",
+              "SmartFin BD ব্যবহার করে আপনি আমাদের সেবার শর্তাবলী মেনে নিতে সম্মত হচ্ছেন।\n\nবিস্তারিত জানতে আমাদের ওয়েবসাইট দেখুন।",
+              [{ text: "ঠিক আছে" }]
+            )}
             style={styles.menuItem}
           />
         </Card.Content>
@@ -360,6 +471,28 @@ const styles = StyleSheet.create({
     color: theme.colors.onSurface,
     fontWeight: "bold",
     marginTop: spacing.xs,
+  },
+  quickActionsCard: {
+    margin: spacing.md,
+    marginTop: 0,
+  },
+  quickActionsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  quickActionItem: {
+    width: "48%",
+    padding: spacing.md,
+    alignItems: "center",
+    borderRadius: theme.roundness,
+    marginBottom: spacing.sm,
+    backgroundColor: theme.colors.surfaceVariant,
+  },
+  quickActionText: {
+    marginTop: spacing.sm,
+    textAlign: "center",
+    color: theme.colors.onSurface,
   },
   menuCard: {
     margin: spacing.md,
