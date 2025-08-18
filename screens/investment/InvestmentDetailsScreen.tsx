@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { View, ScrollView, StyleSheet, Alert } from "react-native";
 import {
   Button,
@@ -36,7 +36,7 @@ export const InvestmentDetailsScreen: React.FC = () => {
   const [investmentAmount, setInvestmentAmount] = useState("");
   const [investmentPeriod, setInvestmentPeriod] = useState("5");
   const [monthlyContribution, setMonthlyContribution] = useState("");
-  const [showProjection, setShowProjection] = useState(false);
+  const [projection, setProjection] = useState<any>(null);
 
   // Add font and chart press state for the new API - moved to top before any returns
   const font = useFont(require("@/assets/fonts/SpaceMono-Regular.ttf"), 12);
@@ -50,6 +50,50 @@ export const InvestmentDetailsScreen: React.FC = () => {
   console.log("investmentType", investmentType);
   const investmentDetails =
     InvestmentRecommendationService.getInvestmentDetails(investmentType);
+
+  const calculateProjection = useCallback(() => {
+    if (!investmentDetails) return;
+
+    const amount = parseFloat(investmentAmount) || 0;
+    const monthly = parseFloat(monthlyContribution) || 0;
+    const years = parseInt(investmentPeriod) || 5;
+
+    if (amount < investmentDetails.minInvestment) {
+      Alert.alert(
+        "অপর্যাপ্ত পরিমাণ",
+        `ন্যূনতম বিনিয়োগ ${formatCurrency(
+          investmentDetails.minInvestment
+        )} হতে হবে।`,
+        [{ text: "ঠিক আছে" }]
+      );
+      return;
+    }
+
+    const calculatedProjection =
+      InvestmentRecommendationService.calculateProjection(
+        amount,
+        investmentDetails.expectedReturn,
+        years,
+        monthly
+      );
+
+    setProjection(calculatedProjection);
+  }, [
+    investmentAmount,
+    monthlyContribution,
+    investmentPeriod,
+    investmentDetails,
+  ]);
+
+  const chartData = useMemo(() => {
+    const data =
+      projection?.yearlyBreakdown.map((item: any) => ({
+        x: item.year,
+        y: item.value,
+        y0: item.investment,
+      })) || [];
+    return data;
+  }, [projection]);
 
   useEffect(() => {
     if (investmentDetails && user && financialProfile) {
@@ -97,33 +141,6 @@ export const InvestmentDetailsScreen: React.FC = () => {
       default:
         return "অজানা";
     }
-  };
-
-  const calculateProjection = () => {
-    const amount = parseFloat(investmentAmount) || 0;
-    const monthly = parseFloat(monthlyContribution) || 0;
-    const years = parseInt(investmentPeriod) || 5;
-
-    if (amount < investmentDetails.minInvestment) {
-      Alert.alert(
-        "অপর্যাপ্ত পরিমাণ",
-        `ন্যূনতম বিনিয়োগ ${formatCurrency(
-          investmentDetails.minInvestment
-        )} হতে হবে।`,
-        [{ text: "ঠিক আছে" }]
-      );
-      return;
-    }
-
-    const projection = InvestmentRecommendationService.calculateProjection(
-      amount,
-      investmentDetails.expectedReturn,
-      years,
-      monthly
-    );
-
-    setShowProjection(true);
-    return projection;
   };
 
   const handleInvest = () => {
@@ -198,15 +215,6 @@ export const InvestmentDetailsScreen: React.FC = () => {
       ]
     );
   };
-
-  const projection = showProjection ? calculateProjection() : null;
-
-  const chartData =
-    projection?.yearlyBreakdown.map((item) => ({
-      x: item.year,
-      y: item.value,
-      y0: item.investment,
-    })) || [];
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -350,18 +358,18 @@ export const InvestmentDetailsScreen: React.FC = () => {
                 বৃদ্ধির চার্ট
               </Text>
               <CartesianChart
-                data={chartData}
+                data={chartData as any}
                 xKey="x"
                 yKeys={["y", "y0"]}
                 axisOptions={{
                   font: font,
-                  formatYLabel: (value: number) =>
-                    `${(value / 1000).toFixed(0)}K`,
-                  formatXLabel: (value: number) => `${value}Y`,
+                  formatYLabel: (value: unknown) =>
+                    `${((value as number) / 1000).toFixed(0)}K`,
+                  formatXLabel: (value: unknown) => `${value as number}Y`,
                 }}
-                chartPressState={chartPressState}
+                chartPressState={chartPressState as any}
               >
-                {({ points }) => (
+                {({ points }: any) => (
                   <>
                     <Area
                       points={points.y}
@@ -555,8 +563,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   projectionSummary: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: "column",
+    gap: spacing.md,
     marginBottom: spacing.lg,
   },
   projectionItem: {
@@ -572,6 +580,7 @@ const styles = StyleSheet.create({
   },
   chartContainer: {
     alignItems: "center",
+    height: 300,
   },
   chartTitle: {
     fontWeight: "bold",
