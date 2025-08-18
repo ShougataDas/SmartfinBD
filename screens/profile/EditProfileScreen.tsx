@@ -16,6 +16,8 @@ import {
     SegmentedButtons,
     Avatar,
 } from 'react-native-paper';
+import { Resolver } from 'react-hook-form';
+
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -25,35 +27,56 @@ import { useNavigation } from '@react-navigation/native';
 import { theme, spacing } from '@/constants/theme';
 import { useUserStore } from '@/store/userStore';
 
-interface EditProfileForm {
-    name: string;
-    email: string;
-    phone?: string;
-    age: number;
-    gender?: 'male' | 'female' | 'other';
-    occupation?: string;
-}
+// interface EditProfileForm {
+//     name: string;
+//     email: string;
+//     phone?: string | null;       // 👈 allow null
+//     age: number;
+//     gender?: 'male' | 'female' | 'other';
+//     occupation?: string | null;  // 👈 allow null
+// }
+// const editProfileSchema = yup.object().shape({
+//     name: yup
+//         .string()
+//         .min(2, 'নাম কমপক্ষে ২ অক্ষরের হতে হবে')
+//         .required('নাম আবশ্যক'),
+//     email: yup
+//         .string()
+//         .email('সঠিক ইমেইল ঠিকানা দিন')
+//         .required('ইমেইল আবশ্যক'),
+//     phone: yup
+//         .string()
+//         .matches(/^(\+88)?01[3-9]\d{8}$/, 'সঠিক মোবাইল নম্বর দিন')
+//         .nullable()
+//         .optional(),   // 👈 makes it truly optional
+//     age: yup
+//         .number()
+//         .min(18, 'বয়স কমপক্ষে ১৮ বছর হতে হবে')
+//         .max(100, 'বয়স ১০০ বছরের বেশি হতে পারে না')
+//         .required('বয়স আবশ্যক'),
+//     occupation: yup.string().nullable().optional(), // 👈 same here
+// });
 
-const editProfileSchema = yup.object().shape({
-    name: yup
-        .string()
-        .min(2, 'নাম কমপক্ষে ২ অক্ষরের হতে হবে')
-        .required('নাম আবশ্যক'),
-    email: yup
-        .string()
-        .email('সঠিক ইমেইল ঠিকানা দিন')
-        .required('ইমেইল আবশ্যক'),
+const editProfileSchema = yup.object({
+    name: yup.string().min(2, 'নাম কমপক্ষে ২ অক্ষরের হতে হবে').required('নাম আবশ্যক'),
+    email: yup.string().email('সঠিক ইমেইল ঠিকানা দিন').required('ইমেইল আবশ্যক'),
     phone: yup
         .string()
         .matches(/^(\+88)?01[3-9]\d{8}$/, 'সঠিক মোবাইল নম্বর দিন')
-        .nullable(),
+        .nullable()
+        .notRequired(),
     age: yup
         .number()
         .min(18, 'বয়স কমপক্ষে ১৮ বছর হতে হবে')
         .max(100, 'বয়স ১০০ বছরের বেশি হতে পারে না')
         .required('বয়স আবশ্যক'),
-    occupation: yup.string().nullable(),
+    gender: yup.mixed<'male' | 'female'>().oneOf(['male', 'female']).notRequired(),
+    occupation: yup.string().nullable().notRequired(),
 });
+
+type EditProfileForm = yup.InferType<typeof editProfileSchema>;
+
+
 
 export const EditProfileScreen: React.FC = () => {
     const navigation = useNavigation();
@@ -65,22 +88,21 @@ export const EditProfileScreen: React.FC = () => {
         handleSubmit,
         formState: { errors, isValid, isDirty },
     } = useForm<EditProfileForm>({
-        resolver: yupResolver(editProfileSchema),
+        resolver: yupResolver(editProfileSchema) as Resolver<EditProfileForm>, // 👈 cast fixes resolver mismatch
         mode: 'onChange',
         defaultValues: {
             name: user?.name || '',
             email: user?.email || '',
-            phone: user?.phone || '',
-            age: user?.age || 18,
-            gender: user?.gender || 'male',
-            occupation: user?.occupation || '',
+            phone: user?.phone ?? null,
+            age: user?.age ?? 18,
+            gender: user?.gender ?? 'male',
+            occupation: user?.occupation ?? null,
         },
     });
 
     const genderOptions = [
         { value: 'male', label: 'পুরুষ' },
         { value: 'female', label: 'মহিলা' },
-        { value: 'other', label: 'অন্যান্য' },
     ];
 
     const onSubmit = async (data: EditProfileForm) => {
@@ -92,10 +114,10 @@ export const EditProfileScreen: React.FC = () => {
             updateUser({
                 name: data.name,
                 email: data.email,
-                phone: data.phone,
+                phone: data.phone ?? "",
                 age: data.age,
                 gender: data.gender,
-                occupation: data.occupation,
+                occupation: data.occupation ?? "",
             });
 
             Alert.alert(
@@ -317,10 +339,10 @@ export const EditProfileScreen: React.FC = () => {
                         </View>
 
                         <View style={styles.infoRow}>
-                            <Icon 
-                                name={user?.isEmailVerified ? "check-circle" : "alert-circle"} 
-                                size={20} 
-                                color={user?.isEmailVerified ? "#4CAF50" : "#FF9800"} 
+                            <Icon
+                                name={user?.isEmailVerified ? "check-circle" : "alert-circle"}
+                                size={20}
+                                color={user?.isEmailVerified ? "#4CAF50" : "#FF9800"}
                             />
                             <Text variant="bodyMedium" style={styles.infoText}>
                                 ইমেইল যাচাই: {user?.isEmailVerified ? 'সম্পন্ন' : 'অসম্পন্ন'}
@@ -328,10 +350,10 @@ export const EditProfileScreen: React.FC = () => {
                         </View>
 
                         <View style={styles.infoRow}>
-                            <Icon 
-                                name={user?.isPhoneVerified ? "check-circle" : "alert-circle"} 
-                                size={20} 
-                                color={user?.isPhoneVerified ? "#4CAF50" : "#FF9800"} 
+                            <Icon
+                                name={user?.isPhoneVerified ? "check-circle" : "alert-circle"}
+                                size={20}
+                                color={user?.isPhoneVerified ? "#4CAF50" : "#FF9800"}
                             />
                             <Text variant="bodyMedium" style={styles.infoText}>
                                 ফোন যাচাই: {user?.isPhoneVerified ? 'সম্পন্ন' : 'অসম্পন্ন'}

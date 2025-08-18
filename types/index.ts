@@ -79,7 +79,7 @@ export interface User {
   email: string;
   phone?: string;
   age: number;
-  gender?: "male" | "female" | "other";
+  gender?: "male" | "female" | null;
   occupation?: string;
   profilePicture?: string;
   isEmailVerified: boolean;

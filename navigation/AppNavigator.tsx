@@ -26,7 +26,6 @@ export type RootStackParamList = {
   Main: undefined;
   FinancialProfile: undefined;
   RiskAssessment: undefined;
-  EditProfile: undefined;  // ← This route is already defined
   EditProfile: undefined;
   InvestmentDetails: { investmentId: string };
   SanchayapatraDetails: undefined;
