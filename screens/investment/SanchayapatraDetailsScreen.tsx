@@ -23,7 +23,7 @@ import { useNavigation } from '@react-navigation/native';
 import { theme, spacing } from '@/constants/theme';
 import { useUserStore } from '@/store/userStore';
 import { formatCurrency, formatPercentage } from '@/utils/formatters';
-import { InvestmentType, RiskLevel } from '@/types';
+import { InvestmentType, RiskLevel, InvestmentStatus } from '@/types';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -140,7 +140,7 @@ export const SanchayapatraDetailsScreen: React.FC = () => {
                             expectedReturn: selectedType.interestRate,
                             startDate: new Date(),
                             maturityDate: new Date(Date.now() + selectedType.tenure * 365 * 24 * 60 * 60 * 1000),
-                            status: 'active' as const,
+                            status: InvestmentStatus.Active, // ✅ FIXED
                             riskLevel: RiskLevel.Low,
                             details: {
                                 institution: 'Bangladesh Bank',
@@ -302,13 +302,13 @@ export const SanchayapatraDetailsScreen: React.FC = () => {
                     {showCalculator && (
                         <View style={styles.calculatorContent}>
                             <TextInput
-                                label="বিনিয়োগের পরিমাণ (টাকা)"
+                                label="প্রাথমিক বিনিয়োগ (টাকা)"
                                 value={investmentAmount}
                                 onChangeText={setInvestmentAmount}
                                 keyboardType="numeric"
                                 left={<TextInput.Icon icon="currency-bdt" />}
                                 style={styles.input}
-                                helperText={`${selectedType.name} - ${selectedType.interestRate}% সুদ`}
+                                
                             />
 
                             {projection && (

@@ -268,7 +268,7 @@ const InvestmentScreen: React.FC = () => {
                   </Button>
                   <Button
                     mode="contained"
-                    onPress={() => {}}
+                    onPress={() => { }}
                     style={styles.investButton}
                   >
                     বিনিয়োগ করুন
@@ -283,7 +283,7 @@ const InvestmentScreen: React.FC = () => {
       <FAB
         icon="plus"
         style={styles.fab}
-        onPress={() => {}}
+        onPress={() => { }}
         label="কাস্টম প্ল্যান"
       />
     </View>

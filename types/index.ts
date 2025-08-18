@@ -77,10 +77,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
   age: number;
-  gender?: "male" | "female" | "other";
-  occupation?: string;
+  gender?: "male" | "female" | null;
+  occupation?: string | null;
   profilePicture?: string;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
