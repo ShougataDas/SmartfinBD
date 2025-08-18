@@ -14,11 +14,7 @@ import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
 import { CartesianChart, Line, Area, useChartPressState } from "victory-native";
 import { useFont } from "@shopify/react-native-skia";
 
-import { theme, spacing } from "@/constants/theme";
-import { useUserStore } from "@/store/userStore";
-import { InvestmentRecommendationService } from "@/services/investmentRecommendation";
-import { formatCurrency, formatPercentage } from "@/utils/formatters";
-import { InvestmentType, RiskLevel, InvestmentStatus } from "@/types";
+
 import { theme, spacing } from "@/constants/theme";
 import { useUserStore } from "@/store/userStore";
 import { InvestmentRecommendationService } from "@/services/investmentRecommendation";
