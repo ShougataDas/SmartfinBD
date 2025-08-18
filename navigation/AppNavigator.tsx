@@ -14,6 +14,7 @@ import { FinancialProfileScreen } from "@/screens/profile/FinancialProfileScreen
 import { RiskAssessmentScreen } from "@/screens/profile/RiskAssessmentScreen";
 import { InvestmentDetailsScreen } from "@/screens/investment/InvestmentDetailsScreen";
 import { SanchayapatraDetailsScreen } from "@/screens/investment/SanchayapatraDetailsScreen";
+import { EditProfileScreen } from "@/screens/profile/EditProfileScreen";
 
 import { theme } from "@/constants/theme";
 import { useAuthStore } from "@/store/authStore";
@@ -24,6 +25,7 @@ export type RootStackParamList = {
   Main: undefined;
   FinancialProfile: undefined;
   RiskAssessment: undefined;
+  EditProfile: undefined;
   InvestmentDetails: { investmentId: string };
   SanchayapatraDetails: undefined;
 };
@@ -163,6 +165,16 @@ export const AppNavigator: React.FC = () => {
             options={{
               headerShown: true,
               title: "ঝুঁকি মূল্যায়ন",
+              headerStyle: { backgroundColor: theme.colors.primary },
+              headerTintColor: theme.colors.onPrimary,
+            }}
+          />
+          <Stack.Screen
+            name="EditProfile"
+            component={EditProfileScreen}
+            options={{
+              headerShown: true,
+              title: "প্রোফাইল সম্পাদনা",
               headerStyle: { backgroundColor: theme.colors.primary },
               headerTintColor: theme.colors.onPrimary,
             }}

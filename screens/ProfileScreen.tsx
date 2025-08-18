@@ -35,11 +35,7 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleEditProfile = () => {
-    Alert.alert(
-      "প্রোফাইল সম্পাদনা",
-      "এই ফিচারটি শীঘ্রই আসছে।",
-      [{ text: "ঠিক আছে" }]
-    );
+    navigation.navigate("EditProfile" as never);
   };
 
   const handleFinancialProfile = () => {
