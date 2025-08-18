@@ -15,6 +15,7 @@ import { RiskAssessmentScreen } from "@/screens/profile/RiskAssessmentScreen";
 import { InvestmentDetailsScreen } from "@/screens/investment/InvestmentDetailsScreen";
 import { SanchayapatraDetailsScreen } from "@/screens/investment/SanchayapatraDetailsScreen";
 import { EditProfileScreen } from "@/screens/profile/EditProfileScreen";
+// ↑ This import is already present
 
 import { theme } from "@/constants/theme";
 import { useAuthStore } from "@/store/authStore";
@@ -25,6 +26,7 @@ export type RootStackParamList = {
   Main: undefined;
   FinancialProfile: undefined;
   RiskAssessment: undefined;
+  EditProfile: undefined;  // ← This route is already defined
   EditProfile: undefined;
   InvestmentDetails: { investmentId: string };
   SanchayapatraDetails: undefined;
@@ -179,6 +181,7 @@ export const AppNavigator: React.FC = () => {
               headerTintColor: theme.colors.onPrimary,
             }}
           />
+          {/* ↑ This screen configuration is already present */}
           <Stack.Screen
             name="InvestmentDetails"
             component={InvestmentDetailsScreen}
