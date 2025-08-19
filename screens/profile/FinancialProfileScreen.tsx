@@ -6,9 +6,12 @@ import {
     KeyboardAvoidingView,
     Platform,
     Alert,
+    TouchableOpacity,
+    Pressable,
 } from 'react-native';
 import {
     TextInput,
+    HelperText,
     Button,
     Text,
     Card,
@@ -28,35 +31,82 @@ import { useUserStore } from '@/store/userStore';
 import { FinancialProfileForm, EmploymentType, IncomeStability } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
 
-const profileSchema = yup.object().shape({
+const profileSchema: yup.ObjectSchema<FinancialProfileForm> = yup.object({
     monthlyIncome: yup
         .number()
-        .min(1000, 'মাসিক আয় কমপক্ষে ১০০০ টাকা হতে হবে')
-        .max(10000000, 'মাসিক আয় ১ কোটি টাকার বেশি হতে পারে না')
-        .required('মাসিক আয় আবশ্যক'),
+        .min(1000, "মাসিক আয় কমপক্ষে ১০০০ টাকা হতে হবে")
+        .max(10000000, "মাসিক আয় ১ কোটি টাকার বেশি হতে পারে না")
+        .required("মাসিক আয় আবশ্যক"),
+
     monthlyExpenses: yup
         .number()
-        .min(500, 'মাসিক খরচ কমপক্ষে ৫০০ টাকা হতে হবে')
-        .test('expenses-less-than-income', 'মাসিক খরচ আয়ের চেয়ে কম হতে হবে', function (value) {
-            return value < this.parent.monthlyIncome;
-        })
-        .required('মাসিক খরচ আবশ্যক'),
+        .min(500, "মাসিক খরচ কমপক্ষে ৫০০ টাকা হতে হবে")
+        .test(
+            "expenses-less-than-income",
+            "মাসিক খরচ আয়ের চেয়ে কম হতে হবে",
+            function (value) {
+                return value !== undefined && value < this.parent.monthlyIncome;
+            }
+        )
+        .required("মাসিক খরচ আবশ্যক"),
+
     currentSavings: yup
         .number()
-        .min(0, 'বর্তমান সঞ্চয় ০ বা তার বেশি হতে হবে')
-        .required('বর্তমান সঞ্চয় আবশ্যক'),
+        .min(0, "বর্তমান সঞ্চয় ০ বা তার বেশি হতে হবে")
+        .required("বর্তমান সঞ্চয় আবশ্যক"),
+
     dependents: yup
         .number()
-        .min(0, 'নির্ভরশীল সদস্য ০ বা তার বেশি হতে হবে')
-        .max(20, 'নির্ভরশীল সদস্য ২০ জনের বেশি হতে পারে না')
-        .required('নির্ভরশীল সদস্য সংখ্যা আবশ্যক'),
+        .min(0, "নির্ভরশীল সদস্য ০ বা তার বেশি হতে হবে")
+        .max(20, "নির্ভরশীল সদস্য ২০ জনের বেশি হতে পারে না")
+        .required("নির্ভরশীল সদস্য সংখ্যা আবশ্যক"),
+
+    employmentType: yup
+        .mixed<EmploymentType>()
+        .oneOf(Object.values(EmploymentType))
+        .required("কর্মসংস্থানের ধরন আবশ্যক"),
+
+    incomeStability: yup
+        .mixed<IncomeStability>()
+        .oneOf(Object.values(IncomeStability))
+        .required("আয়ের স্থিতিশীলতা আবশ্যক"),
+
+    hasInsurance: yup
+        .boolean()
+        .required("বীমার তথ্য আবশ্যক"),
+
+    hasEmergencyFund: yup
+        .boolean()
+        .required("জরুরি তহবিলের তথ্য আবশ্যক"),
+
+    debtAmount: yup
+        .number()
+        .min(0, "ঋণের পরিমাণ ঋণাত্মক হতে পারবে না")
+        .optional(),
+
+    financialGoals: yup
+        .array(yup.string().required())
+        .min(1, "কমপক্ষে একটি আর্থিক লক্ষ্য দিতে হবে")
+        .required("আর্থিক লক্ষ্য আবশ্যক"),
+    existingInvestments: yup
+        .array(
+            yup.object({
+                type: yup.string().required(),
+                amount: yup.number().min(0).required(),
+            })
+        )
+        .optional(),
+
+    userId: yup.string().optional(),
+    updatedAt: yup.date().optional(),
 });
+
 
 export const FinancialProfileScreen: React.FC = () => {
     const navigation = useNavigation();
     const { updateFinancialProfile, isLoading, user } = useUserStore();
     const [currentStep, setCurrentStep] = useState(1);
-    const totalSteps = 4;
+    const totalSteps = 7;
 
     const {
         control,
@@ -72,8 +122,12 @@ export const FinancialProfileScreen: React.FC = () => {
             monthlyExpenses: 0,
             currentSavings: 0,
             dependents: 0,
-            employmentType: EmploymentType.PRIVATE,
-            incomeStability: IncomeStability.STABLE,
+            employmentType: EmploymentType.Private,
+            incomeStability: IncomeStability.Stable,
+            hasInsurance: false,
+            hasEmergencyFund: false,
+            debtAmount: 0,
+            financialGoals: [],
         },
     });
 
@@ -81,21 +135,22 @@ export const FinancialProfileScreen: React.FC = () => {
     const monthlySavings = watchedValues.monthlyIncome - watchedValues.monthlyExpenses;
 
     const employmentOptions = [
-        { value: EmploymentType.GOVERNMENT, label: 'সরকারি', icon: 'bank' },
-        { value: EmploymentType.PRIVATE, label: 'বেসরকারি', icon: 'office-building' },
-        { value: EmploymentType.BUSINESS, label: 'ব্যবসা', icon: 'store' },
-        { value: EmploymentType.FREELANCE, label: 'ফ্রিল্যান্স', icon: 'laptop' },
-        { value: EmploymentType.STUDENT, label: 'ছাত্র/ছাত্রী', icon: 'school' },
-        { value: EmploymentType.RETIRED, label: 'অবসরপ্রাপ্ত', icon: 'account-clock' },
+        { value: EmploymentType.Government, label: 'সরকারি', icon: 'bank' },
+        { value: EmploymentType.Private, label: 'বেসরকারি', icon: 'office-building' },
+        { value: EmploymentType.Business, label: 'ব্যবসা', icon: 'store' },
+        { value: EmploymentType.Freelance, label: 'ফ্রিল্যান্স', icon: 'laptop' },
+        { value: EmploymentType.Student, label: 'ছাত্র/ছাত্রী', icon: 'school' },
+        { value: EmploymentType.Retired, label: 'অবসরপ্রাপ্ত', icon: 'account-clock' },
     ];
 
     const incomeStabilityOptions = [
-        { value: IncomeStability.STABLE, label: 'স্থিতিশীল', description: 'নিয়মিত নির্দিষ্ট আয়' },
-        { value: IncomeStability.VARIABLE, label: 'পরিবর্তনশীল', description: 'আয় মাসে মাসে পরিবর্তিত হয়' },
-        { value: IncomeStability.IRREGULAR, label: 'অনিয়মিত', description: 'আয় অনিশ্চিত ও অনিয়মিত' },
+        { value: IncomeStability.Stable, label: 'স্থিতিশীল', description: 'নিয়মিত নির্দিষ্ট আয়' },
+        { value: IncomeStability.Variable, label: 'পরিবর্তনশীল', description: 'আয় মাসে মাসে পরিবর্তিত হয়' },
+        { value: IncomeStability.Irregular, label: 'অনিয়মিত', description: 'আয় অনিশ্চিত ও অনিয়মিত' },
     ];
 
     const onSubmit = async (data: FinancialProfileForm) => {
+        console.log('Form data:', data);
         try {
             await updateFinancialProfile(data);
             Alert.alert(
@@ -109,6 +164,7 @@ export const FinancialProfileScreen: React.FC = () => {
                 ]
             );
         } catch (error) {
+            console.error('Form submission error:', error);
             Alert.alert(
                 'আপডেট ব্যর্থ',
                 'প্রোফাইল আপডেট করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
@@ -120,11 +176,11 @@ export const FinancialProfileScreen: React.FC = () => {
     const handleNext = async () => {
         const fieldsToValidate = getFieldsForStep(currentStep);
         const isStepValid = await trigger(fieldsToValidate);
-
         if (isStepValid) {
             if (currentStep < totalSteps) {
                 setCurrentStep(currentStep + 1);
             } else {
+                //console.log(isStepValid)
                 handleSubmit(onSubmit)();
             }
         }
@@ -146,19 +202,24 @@ export const FinancialProfileScreen: React.FC = () => {
                 return ['currentSavings', 'dependents'];
             case 4:
                 return ['employmentType', 'incomeStability'];
+            case 5:
+                return ['hasInsurance', 'hasEmergencyFund'];
+            case 6:
+                return ['debtAmount'];
+            case 7:
+                return ['financialGoals'];
             default:
                 return [];
         }
     };
 
+
     const renderStep1 = () => (
         <Card style={styles.stepCard}>
             <Card.Content>
                 <View style={styles.stepHeader}>
-                    <Icon name="currency-bdt" size={40} color={theme.colors.primary} />
-                    <Text variant="headlineSmall" style={styles.stepTitle}>
-                        মাসিক আয়
-                    </Text>
+                    <Icon name="currency-bdt" size={30} color={theme.colors.primary} />
+                    <Text variant="headlineSmall" style={styles.stepTitle}> মাসিক আয় </Text>
                     <Text variant="bodyMedium" style={styles.stepDescription}>
                         আপনার মাসিক মোট আয় কত? (সব উৎস থেকে)
                     </Text>
@@ -201,7 +262,7 @@ export const FinancialProfileScreen: React.FC = () => {
         <Card style={styles.stepCard}>
             <Card.Content>
                 <View style={styles.stepHeader}>
-                    <Icon name="cart" size={40} color={theme.colors.secondary} />
+                    <Icon name="cart" size={30} color={theme.colors.secondary} />
                     <Text variant="headlineSmall" style={styles.stepTitle}>
                         মাসিক খরচ
                     </Text>
@@ -250,7 +311,7 @@ export const FinancialProfileScreen: React.FC = () => {
         <Card style={styles.stepCard}>
             <Card.Content>
                 <View style={styles.stepHeader}>
-                    <Icon name="piggy-bank" size={40} color={theme.colors.tertiary} />
+                    <Icon name="piggy-bank" size={30} color={theme.colors.tertiary} />
                     <Text variant="headlineSmall" style={styles.stepTitle}>
                         সঞ্চয় ও পরিবার
                     </Text>
@@ -285,17 +346,23 @@ export const FinancialProfileScreen: React.FC = () => {
                     control={control}
                     name="dependents"
                     render={({ field: { onChange, onBlur, value } }) => (
-                        <TextInput
-                            label="নির্ভরশীল সদস্য সংখ্যা"
-                            value={value ? value.toString() : ''}
-                            onChangeText={(text) => onChange(parseInt(text) || 0)}
-                            onBlur={onBlur}
-                            error={!!errors.dependents}
-                            keyboardType="numeric"
-                            left={<TextInput.Icon icon="account-group" />}
-                            style={styles.input}
-                            helperText="যারা আপনার আয়ের উপর নির্ভরশীল"
-                        />
+                        <>
+                            <TextInput
+                                label="নির্ভরশীল সদস্য সংখ্যা"
+                                value={value ? value.toString() : ""}
+                                onChangeText={(text) => onChange(parseInt(text) || 0)}
+                                onBlur={onBlur}
+                                error={!!errors.dependents}
+                                keyboardType="numeric"
+                                left={<TextInput.Icon icon="account-group" />}
+                                style={styles.input}
+                            />
+                            <HelperText type={errors.dependents ? "error" : "info"} visible>
+                                {errors.dependents
+                                    ? errors.dependents.message
+                                    : "যারা আপনার আয়ের উপর নির্ভরশীল"}
+                            </HelperText>
+                        </>
                     )}
                 />
                 {errors.dependents && (
@@ -323,73 +390,271 @@ export const FinancialProfileScreen: React.FC = () => {
                 <Text variant="titleMedium" style={styles.sectionTitle}>
                     কর্মসংস্থানের ধরন
                 </Text>
-                <View style={styles.optionsGrid}>
-                    {employmentOptions.map((option) => (
-                        <Controller
-                            key={option.value}
-                            control={control}
-                            name="employmentType"
-                            render={({ field: { onChange, value } }) => (
+                <Controller
+                    control={control}
+                    name="employmentType"
+                    render={({ field: { onChange, value } }) => (
+                        <View style={styles.optionsGrid}>
+                            {employmentOptions.map((option) => (
                                 <Chip
+                                    key={option.value}
                                     selected={value === option.value}
                                     onPress={() => onChange(option.value)}
-                                    style={styles.optionChip}
-                                    icon={option.icon}>
+                                    style={[
+                                        styles.optionChip,
+                                        value === option.value && styles.selectedChip
+                                    ]}
+                                    icon={option.icon}
+                                >
                                     {option.label}
                                 </Chip>
-                            )}
-                        />
-                    ))}
-                </View>
+                            ))}
+                        </View>
+                    )}
+                />
+                {errors.employmentType && (
+                    <Text variant="bodySmall" style={styles.errorText}>
+                        {errors.employmentType.message}
+                    </Text>
+                )}
 
                 <Text variant="titleMedium" style={styles.sectionTitle}>
                     আয়ের স্থিতিশীলতা
                 </Text>
-                {incomeStabilityOptions.map((option) => (
-                    <Controller
-                        key={option.value}
-                        control={control}
-                        name="incomeStability"
-                        render={({ field: { onChange, value } }) => (
-                            <Surface
-                                style={[
-                                    styles.stabilityOption,
-                                    value === option.value && styles.selectedOption,
-                                ]}
-                                onTouchEnd={() => onChange(option.value)}>
-                                <View style={styles.stabilityContent}>
-                                    <Text variant="titleMedium" style={styles.stabilityTitle}>
-                                        {option.label}
-                                    </Text>
-                                    <Text variant="bodySmall" style={styles.stabilityDescription}>
-                                        {option.description}
-                                    </Text>
-                                </View>
-                                {value === option.value && (
-                                    <Icon name="check-circle" size={24} color={theme.colors.primary} />
-                                )}
-                            </Surface>
-                        )}
-                    />
-                ))}
+                <Controller
+                    control={control}
+                    name="incomeStability"
+                    render={({ field: { onChange, value } }) => (
+                        <>
+                            {incomeStabilityOptions.map((option) => (
+                                <TouchableOpacity
+                                    key={option.value}
+                                    onPress={() => onChange(option.value)}
+                                    activeOpacity={0.7}
+                                >
+                                    <Surface
+                                        style={[
+                                            styles.stabilityOption,
+                                            value === option.value && styles.selectedOption,
+                                        ]}
+                                    >
+                                        <View style={styles.stabilityContent}>
+                                            <Text variant="titleMedium" style={styles.stabilityTitle}>
+                                                {option.label}
+                                            </Text>
+                                            <Text variant="bodySmall" style={styles.stabilityDescription}>
+                                                {option.description}
+                                            </Text>
+                                        </View>
+                                        {value === option.value && (
+                                            <Icon name="check-circle" size={24} color={theme.colors.primary} />
+                                        )}
+                                    </Surface>
+                                </TouchableOpacity>
+                            ))}
+                        </>
+                    )}
+                />
+                {errors.incomeStability && (
+                    <Text variant="bodySmall" style={styles.errorText}>
+                        {errors.incomeStability.message}
+                    </Text>
+                )}
+            </Card.Content>
+        </Card>
+    );
+    const renderStep5 = () => (
+        <Card style={styles.stepCard}>
+            <Card.Content>
+                <View style={styles.stepHeader}>
+                    <Icon name="shield-check" size={30} color={theme.colors.primary} />
+                    <Text variant="headlineSmall" style={styles.stepTitle}>
+                        সুরক্ষা ব্যবস্থা
+                    </Text>
+                    <Text variant="bodyMedium" style={styles.stepDescription}>
+                        আপনার কি বীমা ও জরুরি তহবিল রয়েছে?
+                    </Text>
+                </View>
+
+                <Text variant="titleMedium" style={styles.sectionTitle}>বীমা</Text>
+                <Controller
+                    control={control}
+                    name="hasInsurance"
+                    render={({ field: { onChange, value } }) => (
+                        <View style={styles.optionsGrid}>
+                            <Chip
+                                selected={value === true}
+                                onPress={() => onChange(true)}
+                                style={[styles.optionChip, value === true && styles.selectedChip]}
+                                icon="check"
+                            >
+                                আছে
+                            </Chip>
+                            <Chip
+                                selected={value === false}
+                                onPress={() => onChange(false)}
+                                style={[styles.optionChip, value === false && styles.selectedChip]}
+                                icon="close"
+                            >
+                                নেই
+                            </Chip>
+                        </View>
+                    )}
+                />
+                {errors.hasInsurance && (
+                    <Text variant="bodySmall" style={styles.errorText}>
+                        {errors.hasInsurance.message}
+                    </Text>
+                )}
+
+                <Text variant="titleMedium" style={styles.sectionTitle}>জরুরি তহবিল</Text>
+                <Controller
+                    control={control}
+                    name="hasEmergencyFund"
+                    render={({ field: { onChange, value } }) => (
+                        <View style={styles.optionsGrid}>
+                            <Chip
+                                selected={value === true}
+                                onPress={() => onChange(true)}
+                                style={[styles.optionChip, value === true && styles.selectedChip]}
+                                icon="check"
+                            >
+                                আছে
+                            </Chip>
+                            <Chip
+                                selected={value === false}
+                                onPress={() => onChange(false)}
+                                style={[styles.optionChip, value === false && styles.selectedChip]}
+                                icon="close"
+                            >
+                                নেই
+                            </Chip>
+                        </View>
+                    )}
+                />
+                {errors.hasEmergencyFund && (
+                    <Text variant="bodySmall" style={styles.errorText}>
+                        {errors.hasEmergencyFund.message}
+                    </Text>
+                )}
+            </Card.Content>
+        </Card>
+    );
+    const renderStep6 = () => (
+        <Card style={styles.stepCard}>
+            <Card.Content>
+                <View style={styles.stepHeader}>
+                    <Icon name="cash-multiple" size={30} color={theme.colors.secondary} />
+                    <Text variant="headlineSmall" style={styles.stepTitle}>
+                        ঋণের তথ্য
+                    </Text>
+                    <Text variant="bodyMedium" style={styles.stepDescription}>
+                        বর্তমানে আপনার মোট ঋণের পরিমাণ কত?
+                    </Text>
+                </View>
+
+                <Controller
+                    control={control}
+                    name="debtAmount"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                        <TextInput
+                            label="ঋণের পরিমাণ (টাকা)"
+                            value={value?.toString() ?? ''}
+                            onChangeText={(text) => onChange(parseInt(text) || 0)}
+                            onBlur={onBlur}
+                            error={!!errors.debtAmount}
+                            keyboardType="numeric"
+                            left={<TextInput.Icon icon="cash" />}
+                            style={styles.input}
+                        />
+                    )}
+                />
+                {errors.debtAmount && (
+                    <Text variant="bodySmall" style={styles.errorText}>
+                        {errors.debtAmount.message}
+                    </Text>
+                )}
+            </Card.Content>
+        </Card>
+    );
+    const financialGoalOptions = [
+        { value: 'retirement', label: 'অবসর' },
+        { value: 'house', label: 'বাড়ি' },
+        { value: 'education', label: 'শিক্ষা' },
+        { value: 'travel', label: 'ভ্রমণ' },
+        { value: 'business', label: 'ব্যবসা' },
+    ];
+
+    const renderStep7 = () => (
+        <Card style={styles.stepCard}>
+            <Card.Content>
+                <View style={styles.stepHeader}>
+                    <Icon name="target" size={30} color={theme.colors.tertiary} />
+                    <Text variant="headlineSmall" style={styles.stepTitle}>
+                        আর্থিক লক্ষ্য
+                    </Text>
+                    <Text variant="bodyMedium" style={styles.stepDescription}>
+                        আপনার প্রধান আর্থিক লক্ষ্যগুলো নির্বাচন করুন
+                    </Text>
+                </View>
+
+                <Controller
+                    control={control}
+                    name="financialGoals"
+                    render={({ field: { onChange, value } }) => {
+                        // Always coerce into array
+                        const goals: string[] = Array.isArray(value) ? value : [];
+
+                        return (
+                            <View style={styles.optionsGrid}>
+                                {financialGoalOptions.map((goal) => (
+                                    <Chip
+                                        key={goal.value}
+                                        selected={goals.includes(goal.value)}
+                                        onPress={() => {
+                                            if (goals.includes(goal.value)) {
+                                                onChange(goals.filter((g) => g !== goal.value));
+                                            } else {
+                                                onChange([...goals, goal.value]);
+                                            }
+                                        }}
+                                        style={[
+                                            styles.optionChip,
+                                            goals.includes(goal.value) && styles.selectedChip,
+                                        ]}
+                                        icon="target"
+                                    >
+                                        {goal.label}
+                                    </Chip>
+                                ))}
+                            </View>
+                        );
+                    }}
+                />
+                {errors.financialGoals && (
+                    <Text variant="bodySmall" style={styles.errorText}>
+                        {errors.financialGoals.message}
+                    </Text>
+                )}
             </Card.Content>
         </Card>
     );
 
+
+
     const renderCurrentStep = () => {
         switch (currentStep) {
-            case 1:
-                return renderStep1();
-            case 2:
-                return renderStep2();
-            case 3:
-                return renderStep3();
-            case 4:
-                return renderStep4();
-            default:
-                return renderStep1();
+            case 1: return renderStep1();
+            case 2: return renderStep2();
+            case 3: return renderStep3();
+            case 4: return renderStep4();
+            case 5: return renderStep5();
+            case 6: return renderStep6();
+            case 7: return renderStep7();
+            default: return renderStep1();
         }
     };
+
 
     return (
         <KeyboardAvoidingView
@@ -435,7 +700,9 @@ export const FinancialProfileScreen: React.FC = () => {
                         loading={isLoading}
                         disabled={isLoading}
                         style={styles.nextButton}
-                        icon={currentStep === totalSteps ? "check" : "arrow-right"}>
+                        icon={currentStep === totalSteps ? "check" : "arrow-right"}
+                        onPressIn={() => console.log('Button pressed')}
+                    >
                         {currentStep === totalSteps ? 'সম্পূর্ণ করুন' : 'পরবর্তী'}
                     </Button>
                 </View>
@@ -526,9 +793,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         marginBottom: spacing.lg,
+        gap: spacing.xs,
     },
     optionChip: {
         margin: spacing.xs,
+    },
+    selectedChip: {
+        backgroundColor: theme.colors.primaryContainer,
     },
     stabilityOption: {
         flexDirection: 'row',
@@ -537,9 +808,11 @@ const styles = StyleSheet.create({
         marginBottom: spacing.sm,
         borderRadius: theme.roundness,
         backgroundColor: theme.colors.surfaceVariant,
+        elevation: 1,
     },
     selectedOption: {
         backgroundColor: theme.colors.primaryContainer,
+        elevation: 3,
     },
     stabilityContent: {
         flex: 1,
@@ -556,6 +829,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginTop: spacing.lg,
+        paddingBottom: spacing.lg,
     },
     previousButton: {
         flex: 1,
@@ -566,4 +840,3 @@ const styles = StyleSheet.create({
         marginLeft: spacing.sm,
     },
 });
-

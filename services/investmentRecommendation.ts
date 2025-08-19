@@ -508,7 +508,7 @@ export class InvestmentRecommendationService {
 
       // Calculate compound growth
       currentValue =
-        (currentValue + yearlyContribution) * (1 + annualReturn / 100);
+        (currentValue + yearlyContribution) * (1 + (annualReturn / 100));
 
       yearlyBreakdown.push({
         year,
