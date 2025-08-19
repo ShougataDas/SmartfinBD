@@ -38,7 +38,7 @@ const profileSchema = yup.object().shape({
         .number()
         .min(500, 'মাসিক খরচ কমপক্ষে ৫০০ টাকা হতে হবে')
         .test('expenses-less-than-income', 'মাসিক খরচ আয়ের চেয়ে কম হতে হবে', function (value) {
-            return value < this.parent.monthlyIncome;
+            return value !== undefined && value < this.parent.monthlyIncome;
         })
         .required('মাসিক খরচ আবশ্যক'),
     currentSavings: yup
@@ -50,6 +50,18 @@ const profileSchema = yup.object().shape({
         .min(0, 'নির্ভরশীল সদস্য ০ বা তার বেশি হতে হবে')
         .max(20, 'নির্ভরশীল সদস্য ২০ জনের বেশি হতে পারে না')
         .required('নির্ভরশীল সদস্য সংখ্যা আবশ্যক'),
+    employmentType: yup
+        .mixed<EmploymentType>()
+        .oneOf(Object.values(EmploymentType))
+        .required('কর্মসংস্থানের ধরন আবশ্যক'),
+    incomeStability: yup
+        .mixed<IncomeStability>()
+        .oneOf(Object.values(IncomeStability))
+        .required('আয়ের স্থিতিশীলতা আবশ্যক'),
+    hasInsurance: yup.boolean().default(false),
+    hasEmergencyFund: yup.boolean().default(false),
+    debtAmount: yup.number().min(0).default(0).optional(),
+    financialGoals: yup.array(yup.string()).default(['retirement']),
 });
 
 export const FinancialProfileScreen: React.FC = () => {
@@ -74,6 +86,10 @@ export const FinancialProfileScreen: React.FC = () => {
             dependents: 0,
             employmentType: EmploymentType.PRIVATE,
             incomeStability: IncomeStability.STABLE,
+            hasInsurance: false,
+            hasEmergencyFund: false,
+            debtAmount: 0,
+            financialGoals: ['retirement'],
         },
     });
 
@@ -96,7 +112,18 @@ export const FinancialProfileScreen: React.FC = () => {
     ];
 
     const onSubmit = async (data: FinancialProfileForm) => {
+        console.log('Form data:', data);
         try {
+            // Ensure all required fields are present
+            const completeData: FinancialProfileForm = {
+                ...data,
+                hasInsurance: data.hasInsurance || false,
+                hasEmergencyFund: data.hasEmergencyFund || false,
+                debtAmount: data.debtAmount || 0,
+                financialGoals: data.financialGoals || ['retirement'],
+            };
+            
+            console.log('Complete form data:', completeData);
             await updateFinancialProfile(data);
             Alert.alert(
                 'প্রোফাইল আপডেট সফল',
@@ -109,6 +136,7 @@ export const FinancialProfileScreen: React.FC = () => {
                 ]
             );
         } catch (error) {
+            console.error('Form submission error:', error);
             Alert.alert(
                 'আপডেট ব্যর্থ',
                 'প্রোফাইল আপডেট করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
@@ -119,14 +147,27 @@ export const FinancialProfileScreen: React.FC = () => {
 
     const handleNext = async () => {
         const fieldsToValidate = getFieldsForStep(currentStep);
+        console.log('Validating fields for step', currentStep, ':', fieldsToValidate);
         const isStepValid = await trigger(fieldsToValidate);
-
+        console.log('Step validation result:', isStepValid);
+        
+        // Log current form values
+        console.log('Current form values:', watchedValues);
+        
         if (isStepValid) {
             if (currentStep < totalSteps) {
                 setCurrentStep(currentStep + 1);
             } else {
+                console.log('Submitting form...');
                 handleSubmit(onSubmit)();
             }
+        } else {
+            console.log('Form validation errors:', errors);
+            Alert.alert(
+                'ফর্ম সম্পূর্ণ করুন',
+                'অনুগ্রহ করে সব প্রয়োজনীয় তথ্য পূরণ করুন।',
+                [{ text: 'ঠিক আছে' }]
+            );
         }
     };
 
@@ -566,4 +607,3 @@ const styles = StyleSheet.create({
         marginLeft: spacing.sm,
     },
 });
-
