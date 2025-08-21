@@ -165,19 +165,24 @@ export const RiskAssessmentScreen: React.FC = () => {
         const scorePercentage = (totalScore / maxScore) * 100;
 
         if (scorePercentage <= 40) {
-            riskTolerance = RiskTolerance.CONSERVATIVE;
+            riskTolerance = RiskTolerance.Conservative;
         } else if (scorePercentage <= 70) {
-            riskTolerance = RiskTolerance.MODERATE;
+            riskTolerance = RiskTolerance.Moderate;
         } else {
-            riskTolerance = RiskTolerance.AGGRESSIVE;
+            riskTolerance = RiskTolerance.Aggressive;
         }
 
         const assessment: RiskAssessment = {
+            riskTolerance: riskTolerance,
+            tolerance: riskTolerance,
+            investmentExperience: 'beginner',
+            investmentHorizon: 'medium',
+            liquidityNeeds: 'medium',
+            assessmentScore: totalScore,
+            completedAt: new Date(),
             userId: user?.id || '',
             score: totalScore,
-            tolerance: riskTolerance,
             answers: assessmentAnswers,
-            completedAt: new Date(),
         };
 
         setRiskAssessment(assessment);
@@ -186,15 +191,15 @@ export const RiskAssessmentScreen: React.FC = () => {
 
     const showResults = (tolerance: RiskTolerance, scorePercentage: number) => {
         const toleranceText = {
-            [RiskTolerance.CONSERVATIVE]: 'রক্ষণশীল',
-            [RiskTolerance.MODERATE]: 'মাঝারি',
-            [RiskTolerance.AGGRESSIVE]: 'আক্রমণাত্মক',
+            [RiskTolerance.Conservative]: 'রক্ষণশীল',
+            [RiskTolerance.Moderate]: 'মাঝারি',
+            [RiskTolerance.Aggressive]: 'আক্রমণাত্মক',
         };
 
         const recommendations = {
-            [RiskTolerance.CONSERVATIVE]: 'সঞ্চয়পত্র, ফিক্সড ডিপোজিট, DPS এর মতো নিরাপদ বিনিয়োগ',
-            [RiskTolerance.MODERATE]: 'মিউচুয়াল ফান্ড, সরকারি বন্ড, এবং কিছু শেয়ারের মিশ্রণ',
-            [RiskTolerance.AGGRESSIVE]: 'শেয়ার বাজার, গ্রোথ মিউচুয়াল ফান্ড, এবং উচ্চ রিটার্ন বিনিয়োগ',
+            [RiskTolerance.Conservative]: 'সঞ্চয়পত্র, ফিক্সড ডিপোজিট, DPS এর মতো নিরাপদ বিনিয়োগ',
+            [RiskTolerance.Moderate]: 'মিউচুয়াল ফান্ড, সরকারি বন্ড, এবং কিছু শেয়ারের মিশ্রণ',
+            [RiskTolerance.Aggressive]: 'শেয়ার বাজার, গ্রোথ মিউচুয়াল ফান্ড, এবং উচ্চ রিটার্ন বিনিয়োগ',
         };
 
         Alert.alert(

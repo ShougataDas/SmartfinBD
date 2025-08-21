@@ -114,10 +114,10 @@ export const EditProfileScreen: React.FC = () => {
             updateUser({
                 name: data.name,
                 email: data.email,
-                phone: data.phone,
+                phone: data.phone || "",
                 age: data.age,
                 gender: data.gender,
-                occupation: data.occupation,
+                occupation: data.occupation || "",
             });
 
             Alert.alert(

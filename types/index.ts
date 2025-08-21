@@ -77,10 +77,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  phone?: string | null;
+  phone?: string;
   age: number;
   gender?: "male" | "female" | null;
-  occupation?: string | null;
+  occupation?: string;
   profilePicture?: string;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
@@ -122,6 +122,15 @@ export interface RiskAssessment {
   liquidityNeeds: "low" | "medium" | "high";
   assessmentScore: number; // A calculated score based on answers
   completedAt?: Date;
+  userId?: string;
+  score?: number;
+  answers?: RiskAssessmentAnswer[];
+}
+
+export interface RiskAssessmentAnswer {
+  questionId: string;
+  answer: string;
+  score: number;
 }
 
 export interface UserPreferences {
