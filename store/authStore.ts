@@ -43,7 +43,19 @@ export const useAuthStore = create<AuthStore>()(
                     await new Promise(resolve => setTimeout(resolve, 1500));
 
                     // Mock successful login
-                    if (credentials.email && credentials.password) {
+                    if (credentials.email === 'demo@smartfinbd.com' && credentials.password === 'demo123') {
+                        const mockToken = 'mock_jwt_token_' + Date.now();
+                        const mockRefreshToken = 'mock_refresh_token_' + Date.now();
+
+                        set({
+                            isAuthenticated: true,
+                            token: mockToken,
+                            refreshToken: mockRefreshToken,
+                            isLoading: false,
+                            error: null,
+                        });
+                    } else if (credentials.email && credentials.password) {
+                        // Allow any email/password for demo purposes
                         const mockToken = 'mock_jwt_token_' + Date.now();
                         const mockRefreshToken = 'mock_refresh_token_' + Date.now();
 
@@ -148,6 +160,9 @@ export const useAuthStore = create<AuthStore>()(
                 token: state.token,
                 refreshToken: state.refreshToken,
             }),
+            onRehydrateStorage: () => (state) => {
+                console.log('Auth store rehydrated:', state);
+            },
         }
     )
 );

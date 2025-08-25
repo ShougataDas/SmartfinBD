@@ -30,6 +30,11 @@ export const createMockUser = (): User => {
     isActive: true,
     createdAt: new Date("2023-01-01T10:00:00Z"),
     updatedAt: new Date("2024-01-15T14:30:00Z"),
+    monthlyIncome: 50000,
+    monthlySavings: 20000,
+    riskTolerance: RiskTolerance.Moderate,
+    totalInvestment: 160000,
+    goalProgress: 25,
     financialProfile: {
       monthlyIncome: 50000,
       monthlyExpenses: 30000,
@@ -39,7 +44,11 @@ export const createMockUser = (): User => {
       incomeStability: IncomeStability.Stable,
       hasInsurance: true,
       hasEmergencyFund: true,
+      debtAmount: 0,
       financialGoals: ["retirement", "house", "education"],
+      existingInvestments: [],
+      userId: "mock_user_123",
+      updatedAt: new Date("2024-01-15T14:30:00Z"),
     },
     riskAssessment: {
       riskTolerance: RiskTolerance.Moderate,
@@ -49,6 +58,9 @@ export const createMockUser = (): User => {
       liquidityNeeds: "low",
       assessmentScore: 65,
       completedAt: new Date("2024-01-10T11:00:00Z"),
+      userId: "mock_user_123",
+      score: 65,
+      answers: [],
     },
     preferences: {
       language: "en" as const,

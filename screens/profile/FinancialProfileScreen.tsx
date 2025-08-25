@@ -114,6 +114,18 @@ export const FinancialProfileScreen: React.FC = () => {
     const onSubmit = async (data: FinancialProfileForm) => {
         console.log('Form data:', data);
         try {
+            // Ensure all required fields are properly set
+            const completeData: FinancialProfileForm = {
+                ...data,
+                hasInsurance: data.hasInsurance || false,
+                hasEmergencyFund: data.hasEmergencyFund || false,
+                debtAmount: data.debtAmount || 0,
+                financialGoals: data.financialGoals && data.financialGoals.length > 0 
+                    ? data.financialGoals 
+                    : ['retirement'],
+            };
+            
+            console.log('Complete form data:', completeData);
             // Ensure all required fields are present
             const completeData: FinancialProfileForm = {
                 ...data,
@@ -125,13 +137,15 @@ export const FinancialProfileScreen: React.FC = () => {
             
             console.log('Complete form data:', completeData);
             await updateFinancialProfile(data);
+            console.log('Financial profile updated successfully');
+            
             Alert.alert(
                 'প্রোফাইল আপডেট সফল',
                 'আপনার আর্থিক প্রোফাইল সফলভাবে আপডেট হয়েছে।',
                 [
                     {
                         text: 'ঠিক আছে',
-                        onPress: () => navigation.navigate('RiskAssessment' as never),
+                        onPress: () => navigation.goBack(),
                     },
                 ]
             );
