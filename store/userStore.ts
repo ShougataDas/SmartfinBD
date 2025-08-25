@@ -96,8 +96,8 @@ export const useUserStore = create<UserStore>()(
           if (!user) throw new Error("User not found");
 
           const updatedProfile: FinancialProfile = {
-            userId: user.id,
             ...profileData,
+            userId: user.id,
             existingInvestments: get().portfolio?.investments || [],
             updatedAt: new Date(),
           };
@@ -112,6 +112,7 @@ export const useUserStore = create<UserStore>()(
             monthlyIncome: profileData.monthlyIncome,
             monthlySavings:
               profileData.monthlyIncome - profileData.monthlyExpenses,
+            financialProfile: updatedProfile,
           });
         } catch (error) {
           set({
@@ -182,7 +183,8 @@ export const useUserStore = create<UserStore>()(
 
         // Update user's risk tolerance
         get().updateUser({
-          riskTolerance: assessment.tolerance,
+          riskTolerance: assessment.riskTolerance,
+          riskAssessment: assessment,
         });
       },
 
@@ -253,142 +255,8 @@ export const useUserStore = create<UserStore>()(
         try {
           // Simulate fetching user data from API
           await new Promise((resolve) => setTimeout(resolve, 1500));
-          // In a real app, you would fetch user, financialProfile, portfolio, goals, riskAssessment, recommendations
-          // For now, we'll just simulate it by updating state with dummy data
-          const user: User = {
-            id: "1",
-            name: "John Doe",
-            email: "john@example.com",
-            age: 30,
-            isEmailVerified: true,
-            isPhoneVerified: false,
-            isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            preferences: {
-              language: "en",
-              currency: "BDT",
-              notifications: {
-                email: true,
-                push: true,
-              },
-              theme: "light",
-            },
-          };
-          const financialProfile: FinancialProfile = {
-            userId: user.id,
-            monthlyIncome: 50000,
-            monthlyExpenses: 30000,
-            currentSavings: 100000,
-            dependents: 2,
-            employmentType: EmploymentType.Private,
-            incomeStability: IncomeStability.Stable,
-            hasInsurance: true,
-            hasEmergencyFund: true,
-            financialGoals: ["retirement", "house"],
-            existingInvestments: [],
-            updatedAt: new Date(),
-          };
-          const portfolio: Portfolio = {
-            userId: user.id,
-            investments: [],
-            totalInvestment: 0,
-            totalValue: 0,
-            lastUpdated: new Date(),
-          };
-          const goals: FinancialGoal[] = [
-            {
-              id: "1",
-              userId: user.id,
-              name: "Emergency Fund",
-              targetAmount: 100000,
-              currentAmount: 50000,
-              targetDate: new Date(2025, 11, 31),
-              priority: "high",
-              category: "emergency",
-              progress: 50,
-              isActive: true,
-              createdAt: new Date(),
-            },
-            {
-              id: "2",
-              userId: user.id,
-              name: "Retirement",
-              targetAmount: 10000000,
-              currentAmount: 500000,
-              targetDate: new Date(2050, 11, 31),
-              priority: "medium",
-              category: "retirement",
-              progress: 5,
-              isActive: true,
-              createdAt: new Date(),
-            },
-          ];
-          const riskAssessment: RiskAssessment = {
-            riskTolerance: RiskTolerance.Moderate,
-            tolerance: RiskTolerance.Moderate,
-            investmentExperience: "beginner",
-            investmentHorizon: "long",
-            liquidityNeeds: "medium",
-            assessmentScore: 65,
-            completedAt: new Date(),
-          };
-          const recommendations: InvestmentRecommendation[] = [
-            {
-              id: "1",
-              userId: user.id,
-              investmentType: InvestmentType.MutualFund,
-              name: "S&P 500 Index Fund",
-              recommendedAmount: 50000,
-              expectedReturn: 12,
-              suitabilityScore: 85,
-              riskLevel: RiskLevel.Medium,
-              reasoning: "Good for long-term growth",
-              pros: ["Diversified", "Low fees"],
-              cons: ["Market volatility"],
-              minimumAmount: 10000,
-              maximumAmount: 1000000,
-              tenure: {
-                minimum: 5,
-                maximum: 30,
-                unit: "years",
-              },
-              features: ["Diversification", "Professional management"],
-              createdAt: new Date(),
-            },
-            {
-              id: "2",
-              userId: user.id,
-              investmentType: InvestmentType.FixedDeposit,
-              name: "US Treasury Bonds",
-              recommendedAmount: 30000,
-              expectedReturn: 3,
-              suitabilityScore: 70,
-              riskLevel: RiskLevel.Low,
-              reasoning: "Stable returns for conservative investors",
-              pros: ["Low risk", "Stable returns"],
-              cons: ["Lower returns"],
-              minimumAmount: 5000,
-              maximumAmount: 500000,
-              tenure: {
-                minimum: 1,
-                maximum: 10,
-                unit: "years",
-              },
-              features: ["Government backed", "Fixed returns"],
-              createdAt: new Date(),
-            },
-          ];
-
-          set({
-            user,
-            financialProfile,
-            portfolio,
-            goals,
-            riskAssessment,
-            recommendations,
-            isLoading: false,
-          });
+          // Don't overwrite existing data on refresh, just update loading state
+          set({ isLoading: false });
         } catch (error) {
           set({
             isLoading: false,
@@ -414,7 +282,11 @@ export const useUserStore = create<UserStore>()(
         portfolio: state.portfolio,
         goals: state.goals,
         riskAssessment: state.riskAssessment,
+        recommendations: state.recommendations,
       }),
+      onRehydrateStorage: () => (state) => {
+        console.log('User store rehydrated:', state);
+      },
     }
   )
 );

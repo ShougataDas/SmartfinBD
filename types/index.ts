@@ -251,12 +251,12 @@ export interface FinancialGoal {
   targetDate: Date;
   priority: "low" | "medium" | "high";
   category:
-    | "retirement"
-    | "house"
-    | "education"
-    | "emergency"
-    | "vacation"
-    | "other";
+  | "retirement"
+  | "house"
+  | "education"
+  | "emergency"
+  | "vacation"
+  | "other";
   progress: number; // 0-100
   isActive: boolean;
   createdAt: Date;
@@ -282,12 +282,12 @@ export interface GoalForm {
   targetDate: Date;
   priority: "low" | "medium" | "high";
   category:
-    | "retirement"
-    | "house"
-    | "education"
-    | "emergency"
-    | "vacation"
-    | "other";
+  | "retirement"
+  | "house"
+  | "education"
+  | "emergency"
+  | "vacation"
+  | "other";
 }
 
 export interface LoginForm {
@@ -304,7 +304,7 @@ export interface RegisterForm {
   gender?: "male" | "female" | "other";
   password: string;
   confirmPassword: string;
-  agreeToTerms: boolean;
+  agreeToTerms?: boolean;
 }
 
 export interface ChatMessage {
@@ -354,14 +354,14 @@ export interface AuthResponseData {
   user: User;
 }
 
-export interface LoginResponse extends ApiResponse<AuthResponseData> {}
-export interface RegisterResponse extends ApiResponse<AuthResponseData> {}
+export interface LoginResponse extends ApiResponse<AuthResponseData> { }
+export interface RegisterResponse extends ApiResponse<AuthResponseData> { }
 
-export interface UserProfileResponse extends ApiResponse<User> {}
+export interface UserProfileResponse extends ApiResponse<User> { }
 export interface FinancialProfileUpdateResponse
-  extends ApiResponse<FinancialProfile> {}
+  extends ApiResponse<FinancialProfile> { }
 export interface RiskAssessmentUpdateResponse
-  extends ApiResponse<RiskAssessment> {}
+  extends ApiResponse<RiskAssessment> { }
 
 export interface InvestmentsResponseData {
   investments: Investment[];
@@ -379,9 +379,9 @@ export interface InvestmentsResponseData {
   };
 }
 export interface InvestmentsResponse
-  extends ApiResponse<InvestmentsResponseData> {}
+  extends ApiResponse<InvestmentsResponseData> { }
 export interface InvestmentCreateUpdateResponse
-  extends ApiResponse<Investment> {}
+  extends ApiResponse<Investment> { }
 
 export interface RecommendationsResponseData {
   recommendations: InvestmentRecommendation[];
@@ -398,7 +398,7 @@ export interface RecommendationsResponseData {
   validUntil: Date;
 }
 export interface RecommendationsResponse
-  extends ApiResponse<RecommendationsResponseData> {}
+  extends ApiResponse<RecommendationsResponseData> { }
 
 export interface ChatMessageResponseData {
   id: string;
@@ -409,7 +409,7 @@ export interface ChatMessageResponseData {
   language: "en" | "bn";
 }
 export interface ChatMessageResponse
-  extends ApiResponse<ChatMessageResponseData> {}
+  extends ApiResponse<ChatMessageResponseData> { }
 
 export interface ChatHistoryResponseData {
   messages: ChatMessage[];
@@ -421,7 +421,7 @@ export interface ChatHistoryResponseData {
   };
 }
 export interface ChatHistoryResponse
-  extends ApiResponse<ChatHistoryResponseData> {}
+  extends ApiResponse<ChatHistoryResponseData> { }
 
 export interface PortfolioAnalyticsResponseData {
   summary: {
@@ -458,7 +458,7 @@ export interface PortfolioAnalyticsResponseData {
   };
 }
 export interface PortfolioAnalyticsResponse
-  extends ApiResponse<PortfolioAnalyticsResponseData> {}
+  extends ApiResponse<PortfolioAnalyticsResponseData> { }
 
 // ============================================================================
 // Other Utility Types

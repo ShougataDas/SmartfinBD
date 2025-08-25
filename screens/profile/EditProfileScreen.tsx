@@ -111,15 +111,17 @@ export const EditProfileScreen: React.FC = () => {
             // Simulate API call delay
             await new Promise(resolve => setTimeout(resolve, 1000));
 
+            console.log('Updating user with data:', data);
             updateUser({
                 name: data.name,
                 email: data.email,
-                phone: data.phone || "",
+                phone: data.phone || undefined,
                 age: data.age,
                 gender: data.gender,
-                occupation: data.occupation || "",
+                occupation: data.occupation || undefined,
             });
 
+            console.log('User updated successfully');
             Alert.alert(
                 'প্রোফাইল আপডেট সফল',
                 'আপনার প্রোফাইল সফলভাবে আপডেট হয়েছে।',
@@ -131,6 +133,7 @@ export const EditProfileScreen: React.FC = () => {
                 ]
             );
         } catch (error) {
+            console.error('Profile update error:', error);
             Alert.alert(
                 'আপডেট ব্যর্থ',
                 'প্রোফাইল আপডেট করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',

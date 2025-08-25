@@ -42,12 +42,15 @@ export const StoreProvider = ({ children }: StoreProviderProps): React.ReactElem
     };
 
     const initializeUserData = async () => {
+        // Only initialize if no user data exists
         if (!userStore.user) {
             const mockUser = createMockUser();
             userStore.setUser(mockUser);
 
             const mockPortfolio = createMockPortfolio(mockUser.id);
             userStore.updatePortfolio(mockPortfolio);
+        } else {
+            console.log('User data already exists, skipping initialization');
         }
         addWelcomeMessage();
     };
