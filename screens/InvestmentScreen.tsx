@@ -126,6 +126,23 @@ const InvestmentScreen: React.FC = () => {
     }
   };
 
+  const getInvestmentType = (investmentName: string): InvestmentType => {
+    switch (investmentName) {
+      case "সঞ্চয়পত্র":
+        return InvestmentType.Sanchayapatra;
+      case "DPS":
+        return InvestmentType.DPS;
+      case "মিউচুয়াল ফান্ড":
+        return InvestmentType.MutualFund;
+      case "স্টক মার্কেট":
+        return InvestmentType.Stock;
+      case "ফিক্সড ডিপোজিট":
+        return InvestmentType.FixedDeposit;
+      default:
+        return InvestmentType.Sanchayapatra;
+    }
+  };
+
   const filteredInvestments = investmentOptions.filter((investment) => {
     const matchesSearch =
       investment.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -236,28 +253,7 @@ const InvestmentScreen: React.FC = () => {
                   <Button
                     mode="outlined"
                     onPress={() => {
-                      // Map investment name to InvestmentType enum
-                      let investmentType: InvestmentType;
-                      switch (investment.name) {
-                        case "সঞ্চয়পত্র":
-                          investmentType = InvestmentType.Sanchayapatra;
-                          break;
-                        case "DPS":
-                          investmentType = InvestmentType.DPS;
-                          break;
-                        case "মিউচুয়াল ফান্ড":
-                          investmentType = InvestmentType.MutualFund;
-                          break;
-                        case "স্টক মার্কেট":
-                          investmentType = InvestmentType.Stock;
-                          break;
-                        case "ফিক্সড ডিপোজিট":
-                          investmentType = InvestmentType.FixedDeposit;
-                          break;
-                        default:
-                          investmentType = InvestmentType.Sanchayapatra;
-                      }
-
+                      const investmentType = getInvestmentType(investment.name);
                       (navigation.navigate as any)("InvestmentDetails", {
                         investmentType,
                       });
@@ -268,7 +264,13 @@ const InvestmentScreen: React.FC = () => {
                   </Button>
                   <Button
                     mode="contained"
-                    onPress={() => { }}
+                    onPress={() => {
+                      const investmentType = getInvestmentType(investment.name);
+                      (navigation.navigate as any)("InvestmentForm", {
+                        investmentType,
+                        investmentName: investment.name,
+                      });
+                    }}
                     style={styles.investButton}
                   >
                     বিনিয়োগ করুন

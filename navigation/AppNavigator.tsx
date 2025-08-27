@@ -16,7 +16,8 @@ import { InvestmentDetailsScreen } from "@/screens/investment/InvestmentDetailsS
 import { SanchayapatraDetailsScreen } from "@/screens/investment/SanchayapatraDetailsScreen";
 import { EditProfileScreen } from "@/screens/profile/EditProfileScreen";
 // ↑ This import is already present
-
+import { InvestmentFormScreen } from "@/screens/investment/InvestmentFormScreen";
+import { InvestmentType } from "@/types";
 import { theme } from "@/constants/theme";
 import { useAuthStore } from "@/store/authStore";
 
@@ -29,6 +30,7 @@ export type RootStackParamList = {
   EditProfile: undefined;
   InvestmentDetails: { investmentId: string };
   SanchayapatraDetails: undefined;
+  InvestmentForm: { investmentType: InvestmentType; investmentName: string };
 };
 
 export type AuthStackParamList = {
@@ -197,6 +199,16 @@ export const AppNavigator: React.FC = () => {
             options={{
               headerShown: true,
               title: "সঞ্চয়পত্র বিস্তারিত",
+              headerStyle: { backgroundColor: theme.colors.primary },
+              headerTintColor: theme.colors.onPrimary,
+            }}
+          />
+          <Stack.Screen
+            name="InvestmentForm"
+            component={InvestmentFormScreen}
+            options={{
+              headerShown: true,
+              title: "নতুন বিনিয়োগ",
               headerStyle: { backgroundColor: theme.colors.primary },
               headerTintColor: theme.colors.onPrimary,
             }}

@@ -3,7 +3,6 @@
 // ============================================================================
 // Enums
 // ============================================================================
-
 export enum MessageType {
   Text = "text",
   Image = "image",
@@ -304,7 +303,7 @@ export interface RegisterForm {
   gender?: "male" | "female" | "other";
   password: string;
   confirmPassword: string;
-  agreeToTerms?: boolean;
+  agreeToTerms: boolean;
 }
 
 export interface ChatMessage {
