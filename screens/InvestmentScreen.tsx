@@ -268,7 +268,12 @@ const InvestmentScreen: React.FC = () => {
                   </Button>
                   <Button
                     mode="contained"
-                    onPress={() => { }}
+                    onPress={() => {
+                      (navigation.navigate as any)("InvestmentForm", {
+                        investmentType,
+                        investmentName: investment.name,
+                      });
+                    }}
                     style={styles.investButton}
                   >
                     বিনিয়োগ করুন
