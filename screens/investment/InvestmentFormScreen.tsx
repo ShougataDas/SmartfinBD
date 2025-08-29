@@ -40,12 +40,12 @@ type RouteParams = {
 
 interface InvestmentFormData {
     amount: number;
-    monthlyContribution?: number | null;   // Keep it optional
+    monthlyContribution?: number | undefined;   // Made optional with '?'
     tenure: number;
     autoReinvest: boolean;
     maturityReminder: boolean;
     performanceAlerts: boolean;
-    notes?: string | null;
+    notes?: string | null | undefined;
 }
 
 const investmentSchema = yup.object().shape({
@@ -134,7 +134,7 @@ export const InvestmentFormScreen: React.FC = () => {
 
         const projection = InvestmentRecommendationService.calculateProjection(
             watchedValues.amount,
-            investmentDetails.expectedReturn,
+            investmentDetails.expectedReturn.average,
             watchedValues.tenure,
             watchedValues.monthlyContribution || 0
         );
@@ -161,13 +161,13 @@ export const InvestmentFormScreen: React.FC = () => {
                 type: investmentType,
                 amount: data.amount,
                 currentValue: data.amount,
-                expectedReturn: investmentDetails.expectedReturn,
+                expectedReturn: investmentDetails.expectedReturn.average,
                 startDate: new Date(),
                 maturityDate,
                 status: InvestmentStatus.Active,
                 details: {
-                    institution: investmentDetails.provider,
-                    interestRate: investmentDetails.expectedReturn,
+                    institution: investmentDetails.name,
+                    interestRate: investmentDetails.expectedReturn.average,
                     monthlyContribution: data.monthlyContribution,
                     autoReinvest: data.autoReinvest,
                 },
@@ -179,7 +179,7 @@ export const InvestmentFormScreen: React.FC = () => {
                     maturityReminder: data.maturityReminder,
                     performanceAlerts: data.performanceAlerts,
                 },
-                notes: data.notes,
+                notes: data.notes ?? undefined,
                 isActive: true,
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -233,7 +233,7 @@ export const InvestmentFormScreen: React.FC = () => {
             if (currentStep < totalSteps) {
                 setCurrentStep(currentStep + 1);
             } else {
-                handleSubmit(onSubmit)();
+                handleSubmit(onSubmit as any)();
             }
         } else {
             Alert.alert(
@@ -329,7 +329,7 @@ export const InvestmentFormScreen: React.FC = () => {
                         💡 ন্যূনতম বিনিয়োগ: {formatCurrency(investmentDetails.minInvestment)}
                     </Text>
                     <Text variant="bodySmall" style={styles.infoSubtext}>
-                        প্রত্যাশিত বার্ষিক রিটার্ন: {investmentDetails.expectedReturn}%
+                        প্রত্যাশিত বার্ষিক রিটার্ন: {investmentDetails.expectedReturn.average}%
                     </Text>
                 </Surface>
 
@@ -434,7 +434,7 @@ export const InvestmentFormScreen: React.FC = () => {
                                 • মোট বিনিয়োগ: {formatCurrency(projection.totalInvestment)}
                             </Text>
                             <Text variant="bodyMedium" style={styles.projectionDetailText}>
-                                • বার্ষিক রিটার্ন: {investmentDetails.expectedReturn}%
+                                • বার্ষিক রিটার্ন: {investmentDetails.expectedReturn.average}%
                             </Text>
                             <Text variant="bodyMedium" style={styles.projectionDetailText}>
                                 • বিনিয়োগের মেয়াদ: {watchedValues.tenure} বছর

@@ -1,96 +1,21 @@
-import React, { useState } from "react";
-import { ScrollView, View, StyleSheet } from "react-native";
-import {
-  Card,
-  Title,
-  Paragraph,
-  Button,
-  Chip,
-  Text,
-  Searchbar,
-  FAB,
-} from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { useNavigation } from "@react-navigation/native";
+"use client"
 
-import { theme, spacing } from "@/constants/theme";
-import { formatCurrency } from "@/utils/formatters";
-import { InvestmentType } from "@/types";
+import type React from "react"
+import { useState } from "react"
+import { ScrollView, View, StyleSheet } from "react-native"
+import { Card, Title, Paragraph, Button, Chip, Text, Searchbar, FAB } from "react-native-paper"
+import Icon from "react-native-vector-icons/MaterialCommunityIcons"
+import { useNavigation } from "@react-navigation/native"
 
-interface InvestmentOption {
-  id: string;
-  name: string;
-  nameEn: string;
-  description: string;
-  expectedReturn: number;
-  minInvestment: number;
-  riskLevel: "low" | "medium" | "high";
-  category: "government" | "bank" | "stock" | "mutual_fund";
-  features: string[];
-}
+import { theme, spacing } from "@/constants/theme"
+import { formatCurrency } from "@/utils/formatters"
+import { investmentOptions } from "@/data/investmentData"
+import { InvestmentType as InvestmentTypeEnum } from "@/types"
 
 const InvestmentScreen: React.FC = () => {
-  const navigation = useNavigation();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-
-  const investmentOptions: InvestmentOption[] = [
-    {
-      id: "1",
-      name: "সঞ্চয়পত্র",
-      nameEn: "Sanchayapatra",
-      description: "সরকারি সঞ্চয়পত্র - নিরাপদ ও নিশ্চিত আয়",
-      expectedReturn: 8.5,
-      minInvestment: 1000,
-      riskLevel: "low",
-      category: "government",
-      features: ["সরকারি গ্যারান্টি", "নিয়মিত সুদ", "কর সুবিধা"],
-    },
-    {
-      id: "2",
-      name: "DPS",
-      nameEn: "Deposit Pension Scheme",
-      description: "ব্যাংক ডিপোজিট পেনশন স্কিম",
-      expectedReturn: 7.2,
-      minInvestment: 500,
-      riskLevel: "low",
-      category: "bank",
-      features: ["মাসিক জমা", "পেনশন সুবিধা", "নমনীয় মেয়াদ"],
-    },
-    {
-      id: "3",
-      name: "মিউচুয়াল ফান্ড",
-      nameEn: "Mutual Fund",
-      description: "বিভিন্ন কোম্পানির শেয়ারে বিনিয়োগ",
-      expectedReturn: 12.3,
-      minInvestment: 5000,
-      riskLevel: "medium",
-      category: "mutual_fund",
-      features: ["পেশাদার ব্যবস্থাপনা", "বৈচিত্র্যময় পোর্টফোলিও", "তরলতা"],
-    },
-    {
-      id: "4",
-      name: "স্টক মার্কেট",
-      nameEn: "Stock Market",
-      description: "শেয়ার বাজারে প্রত্যক্ষ বিনিয়োগ",
-      expectedReturn: 15.8,
-      minInvestment: 10000,
-      riskLevel: "high",
-      category: "stock",
-      features: ["উচ্চ রিটার্ন সম্ভাবনা", "তাৎক্ষণিক ট্রেডিং", "লভ্যাংশ আয়"],
-    },
-    {
-      id: "5",
-      name: "ফিক্সড ডিপোজিট",
-      nameEn: "Fixed Deposit",
-      description: "ব্যাংক ফিক্সড ডিপোজিট",
-      expectedReturn: 6.5,
-      minInvestment: 1000,
-      riskLevel: "low",
-      category: "bank",
-      features: ["নিশ্চিত রিটার্ন", "বিভিন্ন মেয়াদ", "সহজ প্রক্রিয়া"],
-    },
-  ];
+  const navigation = useNavigation()
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
   const categories = [
     { key: "all", label: "সব", icon: "view-grid" },
@@ -98,59 +23,73 @@ const InvestmentScreen: React.FC = () => {
     { key: "bank", label: "ব্যাংক", icon: "office-building" },
     { key: "mutual_fund", label: "মিউচুয়াল ফান্ড", icon: "chart-line" },
     { key: "stock", label: "শেয়ার", icon: "trending-up" },
-  ];
+  ]
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case "low":
-        return "#4CAF50";
+        return "#4CAF50"
       case "medium":
-        return "#FF9800";
+        return "#FF9800"
       case "high":
-        return "#F44336";
+        return "#F44336"
       default:
-        return theme.colors.primary;
+        return theme.colors.primary
     }
-  };
+  }
 
   const getRiskLabel = (risk: string) => {
     switch (risk) {
       case "low":
-        return "কম ঝুঁকি";
+        return "কম ঝুঁকি"
       case "medium":
-        return "মাঝারি ঝুঁকি";
+        return "মাঝারি ঝুঁকি"
       case "high":
-        return "উচ্চ ঝুঁকি";
+        return "উচ্চ ঝুঁকি"
       default:
-        return "অজানা";
+        return "অজানা"
     }
-  };
+  }
 
-  const getInvestmentType = (investmentName: string): InvestmentType => {
-    switch (investmentName) {
-      case "সঞ্চয়পত্র":
-        return InvestmentType.Sanchayapatra;
-      case "DPS":
-        return InvestmentType.DPS;
-      case "মিউচুয়াল ফান্ড":
-        return InvestmentType.MutualFund;
-      case "স্টক মার্কেট":
-        return InvestmentType.Stock;
-      case "ফিক্সড ডিপোজিট":
-        return InvestmentType.FixedDeposit;
-      default:
-        return InvestmentType.Sanchayapatra;
+  const getLiquidityLabel = (liquidity: any) => {
+    if (typeof liquidity === "string") {
+      switch (liquidity) {
+        case "low":
+          return "কম তরলতা"
+        case "medium":
+          return "মাঝারি তরলতা"
+        case "high":
+          return "উচ্চ তরলতা"
+        default:
+          return liquidity
+      }
     }
-  };
+    return liquidity?.description ?? "অজানা"
+  }
+
+  const getCategoryFromType = (type: InvestmentTypeEnum): string => {
+    const EnumAny = InvestmentTypeEnum as any
+    switch (type) {
+      case EnumAny.SANCHAYAPATRA_PORIBAR:
+      case EnumAny.SANCHAYAPATRA_PENSIONER:
+        return "government"
+      case EnumAny.FixedDeposit:
+      case EnumAny.DPS:
+        return "bank"
+      case EnumAny.Stock:
+      case EnumAny.MutualFund:
+        return "mutual_fund"
+      default:
+        return "government"
+    }
+  }
 
   const filteredInvestments = investmentOptions.filter((investment) => {
-    const matchesSearch =
-      investment.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      investment.nameEn.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" || investment.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+    const matchesSearch = investment.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const investmentCategory = getCategoryFromType(investment.type)
+    const matchesCategory = selectedCategory === "all" || investmentCategory === selectedCategory
+    return matchesSearch && matchesCategory
+  })
 
   return (
     <View style={styles.container}>
@@ -166,11 +105,7 @@ const InvestmentScreen: React.FC = () => {
         </View>
 
         {/* Category Filter */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoryContainer}
-        >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryContainer}>
           {categories.map((category) => (
             <Chip
               key={category.key}
@@ -191,60 +126,66 @@ const InvestmentScreen: React.FC = () => {
               <Card.Content>
                 <View style={styles.investmentHeader}>
                   <View style={styles.investmentTitle}>
-                    <Title style={styles.investmentName}>
-                      {investment.name}
-                    </Title>
-                    <Text variant="bodySmall" style={styles.investmentNameEn}>
-                      {investment.nameEn}
-                    </Text>
+                    <Title style={styles.investmentName}>{investment.name}</Title>
                   </View>
                   <Chip
-                    style={[
-                      styles.riskChip,
-                      { backgroundColor: getRiskColor(investment.riskLevel) },
-                    ]}
+                    style={[styles.riskChip, { backgroundColor: getRiskColor(investment.riskLevel) }]}
                     textStyle={{ color: "white", fontSize: 10 }}
                   >
                     {getRiskLabel(investment.riskLevel)}
                   </Chip>
                 </View>
 
-                <Paragraph style={styles.description}>
-                  {investment.description}
-                </Paragraph>
+                <Paragraph style={styles.description}>{investment.description}</Paragraph>
 
                 <View style={styles.investmentStats}>
                   <View style={styles.statItem}>
-                    <Icon
-                      name="trending-up"
-                      size={16}
-                      color={theme.colors.primary}
-                    />
+                    <Icon name="trending-up" size={16} color={theme.colors.primary} />
                     <Text variant="bodySmall" style={styles.statText}>
-                      প্রত্যাশিত রিটার্ন: {investment.expectedReturn}%
+                      প্রত্যাশিত রিটার্ন: {investment.expectedReturn.average}%
                     </Text>
                   </View>
+
+                  {investment.specificDetails?.paymentStructure === "monthly" ? (
+                    <View style={styles.statItem}>
+                      <Icon name="calendar-month" size={16} color={theme.colors.primary} />
+                      <Text variant="bodySmall" style={styles.statText}>
+                        মাসিক বিনিয়োগ: {formatCurrency(investment.specificDetails.monthlyAmount || 0)}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View style={styles.statItem}>
+                      <Icon name="currency-bdt" size={16} color={theme.colors.primary} />
+                      <Text variant="bodySmall" style={styles.statText}>
+                        ন্যূনতম: {formatCurrency(investment.minInvestment)}
+                      </Text>
+                    </View>
+                  )}
+
                   <View style={styles.statItem}>
-                    <Icon
-                      name="currency-bdt"
-                      size={16}
-                      color={theme.colors.primary}
-                    />
+                    <Icon name="cash-multiple" size={16} color={theme.colors.primary} />
                     <Text variant="bodySmall" style={styles.statText}>
-                      ন্যূনতম: {formatCurrency(investment.minInvestment)}
+                      রিটার্ন:{" "}
+                      {investment.specificDetails?.returnPattern === "monthly"
+                        ? "মাসিক"
+                        : investment.specificDetails?.returnPattern === "quarterly"
+                          ? "ত্রৈমাসিক"
+                          : "মেয়াদ শেষে"}
+                    </Text>
+                  </View>
+
+                  <View style={styles.statItem}>
+                    <Icon name="clock-outline" size={16} color={theme.colors.primary} />
+                    <Text variant="bodySmall" style={styles.statText}>
+                      তরলতা: {getLiquidityLabel(investment.liquidity)}
                     </Text>
                   </View>
                 </View>
 
                 <View style={styles.features}>
-                  {investment.features.map((feature, index) => (
-                    <Chip
-                      key={index}
-                      mode="outlined"
-                      style={styles.featureChip}
-                      textStyle={styles.featureText}
-                    >
-                      {feature}
+                  {investment.benefits.map((benefit, index) => (
+                    <Chip key={index} mode="outlined" style={styles.featureChip} textStyle={styles.featureText}>
+                      {benefit}
                     </Chip>
                   ))}
                 </View>
@@ -253,10 +194,10 @@ const InvestmentScreen: React.FC = () => {
                   <Button
                     mode="outlined"
                     onPress={() => {
-                      const investmentType = getInvestmentType(investment.name);
-                      (navigation.navigate as any)("InvestmentDetails", {
-                        investmentType,
-                      });
+                      ; (navigation.navigate as any)("InvestmentDetails", {
+                        investmentId: investment.id,
+                        investmentType: investment.type,
+                      })
                     }}
                     style={styles.detailsButton}
                   >
@@ -265,11 +206,11 @@ const InvestmentScreen: React.FC = () => {
                   <Button
                     mode="contained"
                     onPress={() => {
-                      const investmentType = getInvestmentType(investment.name);
-                      (navigation.navigate as any)("InvestmentForm", {
-                        investmentType,
+                      ; (navigation.navigate as any)("InvestmentForm", {
+                        investmentId: investment.id,
+                        investmentType: investment.type,
                         investmentName: investment.name,
-                      });
+                      })
                     }}
                     style={styles.investButton}
                   >
@@ -282,15 +223,10 @@ const InvestmentScreen: React.FC = () => {
         </View>
       </ScrollView>
 
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={() => { }}
-        label="কাস্টম প্ল্যান"
-      />
+      <FAB icon="plus" style={styles.fab} onPress={() => { }} label="কাস্টম প্ল্যান" />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -330,10 +266,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: theme.colors.onSurface,
-  },
-  investmentNameEn: {
-    color: theme.colors.onSurfaceVariant,
-    fontStyle: "italic",
   },
   riskChip: {
     marginLeft: spacing.sm,
@@ -384,6 +316,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: theme.colors.primary,
   },
-});
+})
 
-export default InvestmentScreen;
+export default InvestmentScreen

@@ -11,10 +11,10 @@ export enum MessageType {
 }
 
 export interface Message {
-  userId: string;
-  text: string;
-  type: MessageType;
-  timestamp: Date;
+  userId: string
+  text: string
+  type: MessageType
+  timestamp: Date
 }
 
 export enum RiskTolerance {
@@ -30,7 +30,8 @@ export enum RiskLevel {
 }
 
 export enum InvestmentType {
-  Sanchayapatra = "sanchayapatra",
+  SANCHAYAPATRA_PORIBAR = "sanchayapatra_poribar",
+  SANCHAYAPATRA_PENSIONER = "sanchayapatra_pensioner",
   DPS = "dps",
   MutualFund = "mutual_fund",
   Stock = "stock",
@@ -73,267 +74,450 @@ export enum InvestmentExperience {
 // ============================================================================
 
 export interface User {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  age: number;
-  gender?: "male" | "female" | null;
-  occupation?: string;
-  profilePicture?: string;
-  isEmailVerified: boolean;
-  isPhoneVerified: boolean;
-  isActive: boolean;
-  lastLoginAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  monthlyIncome?: number;
-  monthlySavings?: number;
-  riskTolerance?: RiskTolerance;
-  totalInvestment?: number;
-  goalProgress?: number;
-  financialProfile?: FinancialProfile;
-  riskAssessment?: RiskAssessment;
-  preferences: UserPreferences;
+  id: string
+  name: string
+  email: string
+  phone?: string
+  age: number
+  gender?: "male" | "female" | null
+  occupation?: string
+  profilePicture?: string
+  isEmailVerified: boolean
+  isPhoneVerified: boolean
+  isActive: boolean
+  lastLoginAt?: Date
+  createdAt: Date
+  updatedAt: Date
+  monthlyIncome?: number
+  monthlySavings?: number
+  riskTolerance?: RiskTolerance
+  totalInvestment?: number
+  goalProgress?: number
+  financialProfile?: FinancialProfile
+  riskAssessment?: RiskAssessment
+  preferences: UserPreferences
 }
 
 export interface FinancialProfile {
-  monthlyIncome: number;
-  monthlyExpenses: number;
-  currentSavings: number;
-  dependents: number;
-  employmentType: EmploymentType;
-  incomeStability: IncomeStability;
-  hasInsurance: boolean;
-  hasEmergencyFund: boolean;
-  debtAmount?: number;
-  financialGoals: string[]; // e.g., ['retirement', 'house', 'education']
-  existingInvestments?: Investment[];
-  userId?: string;
-  updatedAt?: Date;
+  monthlyIncome: number
+  monthlyExpenses: number
+  currentSavings: number
+  dependents: number
+  employmentType: EmploymentType
+  incomeStability: IncomeStability
+  hasInsurance: boolean
+  hasEmergencyFund: boolean
+  debtAmount?: number
+  financialGoals: string[] // e.g., ['retirement', 'house', 'education']
+  existingInvestments?: Investment[]
+  userId?: string
+  updatedAt?: Date
 }
 
 export interface RiskAssessment {
-  riskTolerance: RiskTolerance;
-  tolerance: RiskTolerance; // Alias for riskTolerance for backward compatibility
-  investmentExperience: "beginner" | "intermediate" | "advanced";
-  investmentHorizon: "short" | "medium" | "long";
-  liquidityNeeds: "low" | "medium" | "high";
-  assessmentScore: number; // A calculated score based on answers
-  completedAt?: Date;
-  userId?: string;
-  score?: number;
-  answers?: RiskAssessmentAnswer[];
+  riskTolerance: RiskTolerance
+  tolerance: RiskTolerance // Alias for riskTolerance for backward compatibility
+  investmentExperience: "beginner" | "intermediate" | "advanced"
+  investmentHorizon: "short" | "medium" | "long"
+  liquidityNeeds: "low" | "medium" | "high"
+  assessmentScore: number // A calculated score based on answers
+  completedAt?: Date
+  userId?: string
+  score?: number
+  answers?: RiskAssessmentAnswer[]
 }
 
 export interface RiskAssessmentAnswer {
-  questionId: string;
-  answer: string;
-  score: number;
+  questionId: string
+  answer: string
+  score: number
 }
 
 export interface UserPreferences {
-  language: "en" | "bn";
-  currency: "BDT" | "USD";
+  language: "en" | "bn"
+  currency: "BDT" | "USD"
   notifications: {
-    email: boolean;
-    push: boolean;
-    sms?: boolean;
-  };
-  theme: "light" | "dark";
+    email: boolean
+    push: boolean
+    sms?: boolean
+  }
+  theme: "light" | "dark"
 }
 
 export interface Investment {
-  id: string;
-  userId: string;
-  name: string;
-  type: InvestmentType;
-  amount: number; // Initial invested amount
-  currentValue: number; // Current market value or calculated value
-  expectedReturn: number; // Annual expected return percentage
-  actualReturn?: number; // Actual annual return percentage
-  startDate: Date;
-  maturityDate?: Date;
-  status: InvestmentStatus;
-  details: InvestmentDetails; // Specific details based on investment type
-  performance: PerformanceData;
-  riskMetrics?: RiskMetrics;
-  notifications: NotificationSettings;
-  notes?: string;
-  tags?: string[];
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string
+  userId: string
+  name: string
+  type: InvestmentType
+  amount: number // Initial invested amount
+  currentValue: number // Current market value or calculated value
+  expectedReturn: number // Annual expected return percentage
+  actualReturn?: number // Actual annual return percentage
+  startDate: Date
+  maturityDate?: Date
+  status: InvestmentStatus
+  details: InvestmentDetails // Specific details based on investment type
+  performance: PerformanceData
+  riskMetrics?: RiskMetrics
+  notifications: NotificationSettings
+  notes?: string
+  tags?: string[]
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface InvestmentDetails {
   // Common fields
-  institution?: string;
-  accountNumber?: string;
-  interestRate?: number; // Annual interest rate
+  institution?: string
+  accountNumber?: string
+  interestRate?: number // Annual interest rate
 
   // Sanchayapatra specific
-  certificateNumber?: string;
+  certificateNumber?: string
 
   // DPS specific
-  monthlyInstallment?: number;
-  totalInstallments?: number;
-  installmentsPaid?: number;
+  monthlyInstallment?: number
+  totalInstallments?: number
+  installmentsPaid?: number
 
   // Mutual Fund specific
-  fundName?: string;
-  nav?: number; // Net Asset Value
-  units?: number;
+  fundName?: string
+  nav?: number // Net Asset Value
+  units?: number
 
   // Stock specific
-  symbol?: string;
-  exchange?: string;
-  shares?: number;
-  purchasePrice?: number;
+  symbol?: string
+  exchange?: string
+  shares?: number
+  purchasePrice?: number
+
+  // Bangladesh Investment Specific
+  certificateType?: "poribar" | "pensioner"
+  scheme?: "5_year" | "10_year"
+  tenure?: number // in months
+  compoundingFrequency?: "monthly" | "quarterly" | "annually"
+  autoRenewal?: boolean
+  prematureWithdrawalPenalty?: number // percentage
+  boAccountNumber?: string
+  brokerName?: string
+  tradingCode?: string
+  portfolio?: StockHolding[]
+  totalDividendReceived?: number
+  capitalGainTax?: number // percentage
+  sipAmount?: number // Systematic Investment Plan
+  sipDate?: number // Day of month for SIP
+  managementFee?: number // percentage
+  exitLoad?: number // percentage
 }
 
 export interface PerformanceData {
-  monthlyReturns: { month: Date; value: number; return: number }[];
-  lastUpdated: Date;
+  monthlyReturns: { month: Date; value: number; return: number }[]
+  lastUpdated: Date
 }
 
 export interface RiskMetrics {
-  volatility?: number;
-  sharpeRatio?: number;
-  beta?: number;
-  maxDrawdown?: number;
+  volatility?: number
+  sharpeRatio?: number
+  beta?: number
+  maxDrawdown?: number
 }
 
 export interface NotificationSettings {
-  maturityReminder: boolean;
-  performanceAlerts: boolean;
-  newsUpdates?: boolean;
+  maturityReminder: boolean
+  performanceAlerts: boolean
+  newsUpdates?: boolean
 }
 
 export interface InvestmentRecommendation {
-  id: string;
-  userId: string;
-  investmentType: InvestmentType;
-  name: string;
-  recommendedAmount: number;
-  expectedReturn: number;
-  suitabilityScore: number; // 0-100
-  riskLevel: RiskLevel;
-  reasoning: string;
-  pros: string[];
-  cons: string[];
-  minimumAmount: number;
-  maximumAmount: number;
+  id: string
+  userId: string
+  investmentType: InvestmentType
+  name: string
+  recommendedAmount: number
+  expectedReturn: number
+  suitabilityScore: number // 0-100
+  riskLevel: RiskLevel
+  reasoning: string
+  pros: string[]
+  cons: string[]
+  minimumAmount: number
+  maximumAmount: number
   tenure: {
-    minimum: number;
-    maximum: number;
-    unit: "months" | "years";
-  };
-  features: string[];
-  createdAt: Date;
+    minimum: number
+    maximum: number
+    unit: "months" | "years"
+  }
+  features: string[]
+  createdAt: Date
 }
 
 export interface Portfolio {
-  userId: string;
-  investments: Investment[];
-  totalInvestment: number;
-  totalValue: number;
-  lastUpdated: Date;
+  userId: string
+  investments: Investment[]
+  totalInvestment: number
+  totalValue: number
+  lastUpdated: Date
 }
 
 export interface FinancialGoal {
-  id: string;
-  userId: string;
-  name: string;
-  targetAmount: number;
-  currentAmount: number;
-  targetDate: Date;
-  priority: "low" | "medium" | "high";
-  category:
-  | "retirement"
-  | "house"
-  | "education"
-  | "emergency"
-  | "vacation"
-  | "other";
-  progress: number; // 0-100
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt?: Date;
+  id: string
+  userId: string
+  name: string
+  targetAmount: number
+  currentAmount: number
+  targetDate: Date
+  priority: "low" | "medium" | "high"
+  category: "retirement" | "house" | "education" | "emergency" | "vacation" | "other"
+  progress: number // 0-100
+  isActive: boolean
+  createdAt: Date
+  updatedAt?: Date
 }
 
 export interface FinancialProfileForm {
-  monthlyIncome: number;
-  monthlyExpenses: number;
-  currentSavings: number;
-  dependents: number;
-  employmentType: EmploymentType;
-  incomeStability: IncomeStability;
-  hasInsurance: boolean;
-  hasEmergencyFund: boolean;
-  debtAmount?: number;
-  financialGoals: string[];
+  monthlyIncome: number
+  monthlyExpenses: number
+  currentSavings: number
+  dependents: number
+  employmentType: EmploymentType
+  incomeStability: IncomeStability
+  hasInsurance: boolean
+  hasEmergencyFund: boolean
+  debtAmount?: number
+  financialGoals: string[]
 }
 
 export interface GoalForm {
-  name: string;
-  targetAmount: number;
-  targetDate: Date;
-  priority: "low" | "medium" | "high";
-  category:
-  | "retirement"
-  | "house"
-  | "education"
-  | "emergency"
-  | "vacation"
-  | "other";
+  name: string
+  targetAmount: number
+  targetDate: Date
+  priority: "low" | "medium" | "high"
+  category: "retirement" | "house" | "education" | "emergency" | "vacation" | "other"
 }
 
 export interface LoginForm {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
+  email: string
+  password: string
+  rememberMe?: boolean
 }
 
 export interface RegisterForm {
-  name: string;
-  email: string;
-  phone?: string;
-  age: number;
-  gender?: "male" | "female" | "other";
-  password: string;
-  confirmPassword: string;
-  agreeToTerms: boolean;
+  name: string
+  email: string
+  phone?: string
+  age: number
+  gender?: "male" | "female" | "other"
+  password: string
+  confirmPassword: string
+  agreeToTerms: boolean
 }
 
 export interface ChatMessage {
-  id?: string; // Optional, as it might be generated by backend
-  userId: string; // 'ai_assistant' or user's ID
-  text: string;
-  content?: string; // Alias for text for backward compatibility
-  type: MessageType;
-  isUser?: boolean; // Whether this message is from the user
-  timestamp?: Date; // Optional, will be set by backend/frontend
-  suggestions?: ChatSuggestion[];
-  relatedTopics?: string[];
-  language?: "en" | "bn";
+  id?: string // Optional, as it might be generated by backend
+  userId: string // 'ai_assistant' or user's ID
+  text: string
+  content?: string // Alias for text for backward compatibility
+  type: MessageType
+  isUser?: boolean // Whether this message is from the user
+  timestamp?: Date // Optional, will be set by backend/frontend
+  suggestions?: ChatSuggestion[]
+  relatedTopics?: string[]
+  language?: "en" | "bn"
 }
 
 export interface ChatSuggestion {
-  text: string;
-  action: string; // e.g., 'learn_more', 'open_calculator', 'view_recommendations'
-  data?: any; // Additional data for the action
+  text: string
+  action: string // e.g., 'learn_more', 'open_calculator', 'view_recommendations'
+  data?: any // Additional data for the action
 }
 
 export interface ChatResponse {
-  success: boolean;
-  message: string;
-  error?: string;
+  success: boolean
+  message: string
+  error?: string
   usage?: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
+    prompt_tokens: number
+    completion_tokens: number
+    total_tokens: number
+  }
+}
+
+// ============================================================================
+// Bangladesh Investment Specific Interfaces
+// ============================================================================
+
+export interface SanchayapatraDetails extends InvestmentDetails {
+  certificateType: "poribar" | "pensioner"
+  certificateNumber: string
+  nomineeName?: string
+  nomineeRelation?: string
+  taxRate: 5 | 10 // 5% for investments ≤5 lakh, 10% for >5 lakh
+  eligibility: {
+    minAge?: number
+    maxAge?: number
+    citizenshipRequired: boolean
+    pensionerOnly?: boolean
+  }
+  requiredDocuments: string[]
+  maturityBenefit: {
+    principalAmount: number
+    totalInterest: number
+    totalAmount: number
+  }
+}
+
+export interface DPSDetails extends InvestmentDetails {
+  scheme: "5_year" | "10_year"
+  monthlyInstallment: number
+  totalInstallments: number
+  installmentsPaid: number
+  nextInstallmentDate: Date
+  maturityAmount: number
+  penaltyForEarlyWithdrawal?: number
+  eligibility: {
+    minAge: number
+    maxAge: number
+    citizenshipRequired: boolean
+  }
+  requiredDocuments: string[]
+}
+
+export interface FixedDepositDetails extends InvestmentDetails {
+  tenure: number // in months
+  compoundingFrequency: "monthly" | "quarterly" | "annually"
+  autoRenewal: boolean
+  prematureWithdrawalPenalty: number // percentage
+  eligibility: {
+    minAge: number
+    citizenshipRequired: boolean
+  }
+  requiredDocuments: string[]
+}
+
+export interface StockMarketDetails extends InvestmentDetails {
+  boAccountNumber: string
+  brokerName: string
+  tradingCode: string
+  portfolio: StockHolding[]
+  totalDividendReceived: number
+  capitalGainTax: number // percentage
+  eligibility: {
+    minAge: number
+    boAccountRequired: boolean
+    citizenshipRequired: boolean
+  }
+  requiredDocuments: string[]
+}
+
+export interface StockHolding {
+  symbol: string
+  companyName: string
+  shares: number
+  averageBuyPrice: number
+  currentPrice: number
+  marketValue: number
+  gainLoss: number
+  gainLossPercentage: number
+  dividendYield?: number
+}
+
+export interface MutualFundDetails extends InvestmentDetails {
+  fundName: string
+  fundType: "equity" | "bond" | "balanced" | "money_market"
+  amc: string // Asset Management Company
+  nav: number // Net Asset Value
+  units: number
+  sipAmount?: number // Systematic Investment Plan
+  sipDate?: number // Day of month for SIP
+  managementFee: number // percentage
+  exitLoad?: number // percentage
+  eligibility: {
+    minAge: number
+    citizenshipRequired: boolean
+  }
+  requiredDocuments: string[]
+}
+
+export interface InvestmentEligibility {
+  minAge?: number
+  maxAge?: number
+  citizenshipRequired: boolean
+  minIncome?: number
+  employmentType?: EmploymentType[]
+  specialConditions?: string[]
+}
+
+export interface TaxImplication {
+  taxRate: number // percentage
+  taxFreeThreshold?: number
+  withholdingTax?: number
+  capitalGainsTax?: number
+  applicableConditions: string[]
+}
+
+export interface RequiredDocument {
+  name: string
+  description: string
+  mandatory: boolean
+  alternatives?: string[]
+}
+
+export interface InvestmentOption {
+  id: string
+  name: string
+  nameEn?: string // Added optional nameEn property
+  type: InvestmentType
+  description: string
+  minInvestment: number
+  maxInvestment?: number
+  expectedReturn: {
+    min: number
+    max: number
+    average: number
+  }
+  tenure: {
+    min: number
+    max: number
+    unit: "months" | "years"
+  }
+  riskLevel: RiskLevel
+  liquidity: "high" | "medium" | "low"
+  eligibility: InvestmentEligibility
+  taxImplications: TaxImplication
+  requiredDocuments: RequiredDocument[]
+  features: string[]
+  benefits: string[]
+  risks: string[]
+  suitableFor: string[]
+  processingTime: string
+  withdrawalRules: {
+    prematureWithdrawal: boolean
+    penaltyRate?: number
+    conditions: string[]
+  }
+  specificDetails?: {
+    paymentStructure?: "one-time" | "monthly" | "quarterly" | "flexible"
+    returnPattern?: "monthly" | "quarterly" | "maturity" | "variable"
+    certificateType?: "poribar" | "pensioner"
+    taxRate?: number
+    monthlyAmount?: number
+    [key: string]: any
+  }
+}
+
+export interface BangladeshInvestmentData {
+  sanchayapatra: {
+    poribar: InvestmentOption
+    pensioner: InvestmentOption
+  }
+  dps: {
+    fiveYear: InvestmentOption
+    tenYear: InvestmentOption
+  }
+  fixedDeposit: InvestmentOption[]
+  stockMarket: InvestmentOption
+  mutualFunds: InvestmentOption[]
 }
 
 // ============================================================================
@@ -341,132 +525,124 @@ export interface ChatResponse {
 // ============================================================================
 
 export interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data?: T;
-  errors?: string[];
-  code?: string;
+  success: boolean
+  message?: string
+  data?: T
+  errors?: string[]
+  code?: string
 }
 
 export interface AuthResponseData {
-  token: string;
-  user: User;
+  token: string
+  user: User
 }
 
 export interface LoginResponse extends ApiResponse<AuthResponseData> { }
 export interface RegisterResponse extends ApiResponse<AuthResponseData> { }
 
 export interface UserProfileResponse extends ApiResponse<User> { }
-export interface FinancialProfileUpdateResponse
-  extends ApiResponse<FinancialProfile> { }
-export interface RiskAssessmentUpdateResponse
-  extends ApiResponse<RiskAssessment> { }
+export interface FinancialProfileUpdateResponse extends ApiResponse<FinancialProfile> { }
+export interface RiskAssessmentUpdateResponse extends ApiResponse<RiskAssessment> { }
 
 export interface InvestmentsResponseData {
-  investments: Investment[];
+  investments: Investment[]
   pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
   summary: {
-    totalValue: number;
-    totalInvested: number;
-    totalReturn: number;
-    returnPercentage: number;
-  };
+    totalValue: number
+    totalInvested: number
+    totalReturn: number
+    returnPercentage: number
+  }
 }
-export interface InvestmentsResponse
-  extends ApiResponse<InvestmentsResponseData> { }
-export interface InvestmentCreateUpdateResponse
-  extends ApiResponse<Investment> { }
+export interface InvestmentsResponse extends ApiResponse<InvestmentsResponseData> { }
+export interface InvestmentCreateUpdateResponse extends ApiResponse<Investment> { }
 
 export interface RecommendationsResponseData {
-  recommendations: InvestmentRecommendation[];
+  recommendations: InvestmentRecommendation[]
   summary: {
-    totalRecommendations: number;
-    averageSuitabilityScore: number;
+    totalRecommendations: number
+    averageSuitabilityScore: number
     recommendedPortfolio: {
-      conservative: number;
-      moderate: number;
-      aggressive: number;
-    };
-  };
-  generatedAt: Date;
-  validUntil: Date;
+      conservative: number
+      moderate: number
+      aggressive: number
+    }
+  }
+  generatedAt: Date
+  validUntil: Date
 }
-export interface RecommendationsResponse
-  extends ApiResponse<RecommendationsResponseData> { }
+export interface RecommendationsResponse extends ApiResponse<RecommendationsResponseData> { }
 
 export interface ChatMessageResponseData {
-  id: string;
-  message: string;
-  suggestions?: ChatSuggestion[];
-  relatedTopics?: string[];
-  timestamp: Date;
-  language: "en" | "bn";
+  id: string
+  message: string
+  suggestions?: ChatSuggestion[]
+  relatedTopics?: string[]
+  timestamp: Date
+  language: "en" | "bn"
 }
-export interface ChatMessageResponse
-  extends ApiResponse<ChatMessageResponseData> { }
+export interface ChatMessageResponse extends ApiResponse<ChatMessageResponseData> { }
 
 export interface ChatHistoryResponseData {
-  messages: ChatMessage[];
+  messages: ChatMessage[]
   pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
+    page: number
+    limit: number
+    total: number
+    pages: number
+  }
 }
-export interface ChatHistoryResponse
-  extends ApiResponse<ChatHistoryResponseData> { }
+export interface ChatHistoryResponse extends ApiResponse<ChatHistoryResponseData> { }
 
 export interface PortfolioAnalyticsResponseData {
   summary: {
-    totalValue: number;
-    totalInvested: number;
-    totalReturn: number;
-    returnPercentage: number;
-    monthlyGrowth: number;
-    yearlyProjection: number;
-  };
+    totalValue: number
+    totalInvested: number
+    totalReturn: number
+    returnPercentage: number
+    monthlyGrowth: number
+    yearlyProjection: number
+  }
   allocation: {
-    byType: { type: InvestmentType; value: number; percentage: number }[];
-    byRisk: { level: RiskTolerance; value: number; percentage: number }[];
-  };
+    byType: { type: InvestmentType; value: number; percentage: number }[]
+    byRisk: { level: RiskTolerance; value: number; percentage: number }[]
+  }
   performance: {
     monthly: {
-      month: string;
-      value: number;
-      return: number;
-      benchmark: number;
-    }[];
+      month: string
+      value: number
+      return: number
+      benchmark: number
+    }[]
     yearly: {
-      year: string;
-      value: number;
-      return: number;
-      benchmark: number;
-    }[];
-  };
+      year: string
+      value: number
+      return: number
+      benchmark: number
+    }[]
+  }
   riskMetrics: {
-    volatility: number;
-    sharpeRatio: number;
-    maxDrawdown: number;
-    beta: number;
-  };
+    volatility: number
+    sharpeRatio: number
+    maxDrawdown: number
+    beta: number
+  }
 }
-export interface PortfolioAnalyticsResponse
-  extends ApiResponse<PortfolioAnalyticsResponseData> { }
+export interface PortfolioAnalyticsResponse extends ApiResponse<PortfolioAnalyticsResponseData> { }
 
 // ============================================================================
 // Other Utility Types
 // ============================================================================
 
 export type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
-};
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
+}
 
-export type Nullable<T> = T | null;
+export type Nullable<T> = T | null
 
-export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
