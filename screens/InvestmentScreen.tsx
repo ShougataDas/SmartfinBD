@@ -84,6 +84,33 @@ const InvestmentScreen: React.FC = () => {
     }
   }
 
+  const navigateToInvestmentScreen = (investmentType: InvestmentTypeEnum, investmentId: string) => {
+    const EnumAny = InvestmentTypeEnum as any
+    switch (investmentType) {
+      case EnumAny.SANCHAYAPATRA_PORIBAR:
+      case EnumAny.SANCHAYAPATRA_PENSIONER:
+        ; (navigation.navigate as any)("SanchayapatraScreen", { investmentId })
+        break
+      case EnumAny.DPS:
+        ; (navigation.navigate as any)("DPSScreen", { investmentId })
+        break
+      case EnumAny.FixedDeposit:
+        ; (navigation.navigate as any)("FixedDepositScreen", { investmentId })
+        break
+      case EnumAny.Stock:
+        ; (navigation.navigate as any)("StockMarketScreen", { investmentId })
+        break
+      case EnumAny.MutualFund:
+        ; (navigation.navigate as any)("MutualFundScreen", { investmentId })
+        break
+      default:
+        ; (navigation.navigate as any)("InvestmentDetails", {
+          investmentId,
+          investmentType,
+        })
+    }
+  }
+
   const filteredInvestments = investmentOptions.filter((investment) => {
     const matchesSearch = investment.name.toLowerCase().includes(searchQuery.toLowerCase())
     const investmentCategory = getCategoryFromType(investment.type)
@@ -177,7 +204,8 @@ const InvestmentScreen: React.FC = () => {
                   <View style={styles.statItem}>
                     <Icon name="clock-outline" size={16} color={theme.colors.primary} />
                     <Text variant="bodySmall" style={styles.statText}>
-                      তরলতা: {getLiquidityLabel(investment.liquidity)}
+                      তরলতা:{" "}
+                      {getLiquidityLabel(investment.liquidity)}
                     </Text>
                   </View>
                 </View>
@@ -194,10 +222,7 @@ const InvestmentScreen: React.FC = () => {
                   <Button
                     mode="outlined"
                     onPress={() => {
-                      ; (navigation.navigate as any)("InvestmentDetails", {
-                        investmentId: investment.id,
-                        investmentType: investment.type,
-                      })
+                      navigateToInvestmentScreen(investment.type, investment.id)
                     }}
                     style={styles.detailsButton}
                   >
@@ -206,11 +231,7 @@ const InvestmentScreen: React.FC = () => {
                   <Button
                     mode="contained"
                     onPress={() => {
-                      ; (navigation.navigate as any)("InvestmentForm", {
-                        investmentId: investment.id,
-                        investmentType: investment.type,
-                        investmentName: investment.name,
-                      })
+                      navigateToInvestmentScreen(investment.type, investment.id)
                     }}
                     style={styles.investButton}
                   >
