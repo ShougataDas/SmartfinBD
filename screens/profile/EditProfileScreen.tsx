@@ -202,7 +202,7 @@ export const EditProfileScreen: React.FC = () => {
                         onImageSelected={handleImageSelected}
                         onImageRemoved={handleImageRemoved}
                         size={120}
-                        editable={false}
+                        editable={true}
                     />
                 </Surface>
 
