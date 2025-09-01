@@ -6,7 +6,6 @@ import {
   Paragraph,
   Button,
   List,
-  Avatar,
   Surface,
   Text,
   Divider,
@@ -19,6 +18,7 @@ import { theme, spacing } from "@/constants/theme";
 import { useUserStore } from "@/store/userStore";
 import { useAuthStore } from "@/store/authStore";
 import { formatCurrency } from "@/utils/formatters";
+import { ProfilePictureSelector } from "@/components/common/ProfilePictureSelector";
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -145,10 +145,13 @@ const ProfileScreen: React.FC = () => {
       {/* Profile Header */}
       <Surface style={styles.profileHeader} elevation={2}>
         <View style={styles.profileInfo}>
-          <Avatar.Text
+          <ProfilePictureSelector
+            currentImageUri={user?.profilePicture}
+            userName={user?.name || 'User'}
+            onImageSelected={() => { }}
+            onImageRemoved={() => { }}
             size={80}
-            label={user?.name?.charAt(0) || "U"}
-            style={styles.avatar}
+            editable={false}
           />
           <View style={styles.userInfo}>
             <Title style={styles.userName}>{user?.name || "ব্যবহারকারী"}</Title>
@@ -421,9 +424,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: spacing.md,
-  },
-  avatar: {
-    backgroundColor: theme.colors.primary,
   },
   userInfo: {
     marginLeft: spacing.md,

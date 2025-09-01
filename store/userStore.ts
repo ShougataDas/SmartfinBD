@@ -75,6 +75,12 @@ export const useUserStore = create<UserStore>()(
       updateUser: (updates: Partial<User>) => {
         const { user } = get();
         if (user) {
+          // If profilePicture is being updated, save it securely
+          if (updates.profilePicture && updates.profilePicture !== user.profilePicture) {
+            // The ImageService.saveProfilePicture is called in the component
+            // Here we just update the store
+          }
+
           set({
             user: {
               ...user,

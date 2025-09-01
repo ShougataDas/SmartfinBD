@@ -14,7 +14,6 @@ import {
     Card,
     Surface,
     SegmentedButtons,
-    Avatar,
 } from 'react-native-paper';
 import { Resolver } from 'react-hook-form';
 
@@ -26,6 +25,8 @@ import { useNavigation } from '@react-navigation/native';
 
 import { theme, spacing } from '@/constants/theme';
 import { useUserStore } from '@/store/userStore';
+import { ProfilePictureSelector } from '@/components/common/ProfilePictureSelector';
+import { ImageService } from '@/services/imageService';
 
 // interface EditProfileForm {
 //     name: string;
@@ -82,6 +83,9 @@ export const EditProfileScreen: React.FC = () => {
     const navigation = useNavigation();
     const { user, updateUser } = useUserStore();
     const [isLoading, setIsLoading] = useState(false);
+    const [profilePictureUri, setProfilePictureUri] = useState<string | null>(
+        user?.profilePicture || null
+    );
 
     const {
         control,
@@ -111,6 +115,20 @@ export const EditProfileScreen: React.FC = () => {
             // Simulate API call delay
             await new Promise(resolve => setTimeout(resolve, 1000));
 
+            // Save profile picture if changed
+            let finalProfilePictureUri = profilePictureUri;
+            if (profilePictureUri && profilePictureUri !== user?.profilePicture) {
+                const saved = await ImageService.saveProfilePicture(profilePictureUri);
+                if (!saved) {
+                    Alert.alert(
+                        'ছবি সংরক্ষণে সমস্যা',
+                        'প্রোফাইল ছবি সংরক্ষণ করতে সমস্যা হয়েছে।',
+                        [{ text: 'ঠিক আছে' }]
+                    );
+                    finalProfilePictureUri = user?.profilePicture || null;
+                }
+            }
+
             console.log('Updating user with data:', data);
             updateUser({
                 name: data.name,
@@ -119,6 +137,7 @@ export const EditProfileScreen: React.FC = () => {
                 age: data.age,
                 gender: data.gender,
                 occupation: data.occupation || undefined,
+                profilePicture: finalProfilePictureUri || undefined,
             });
 
             console.log('User updated successfully');
@@ -142,6 +161,14 @@ export const EditProfileScreen: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleImageSelected = (uri: string) => {
+        setProfilePictureUri(uri);
+    };
+
+    const handleImageRemoved = () => {
+        setProfilePictureUri(null);
     };
 
     const handleCancel = () => {
@@ -169,18 +196,14 @@ export const EditProfileScreen: React.FC = () => {
 
                 {/* Profile Picture Section */}
                 <Surface style={styles.avatarSection} elevation={2}>
-                    <Avatar.Text
-                        size={100}
-                        label={user?.name?.charAt(0) || 'U'}
-                        style={styles.avatar}
+                    <ProfilePictureSelector
+                        currentImageUri={profilePictureUri}
+                        userName={user?.name || 'User'}
+                        onImageSelected={handleImageSelected}
+                        onImageRemoved={handleImageRemoved}
+                        size={120}
+                        editable={false}
                     />
-                    <Button
-                        mode="outlined"
-                        onPress={() => Alert.alert('ছবি পরিবর্তন', 'এই ফিচারটি শীঘ্রই আসছে।')}
-                        style={styles.changePhotoButton}
-                        icon="camera">
-                        ছবি পরিবর্তন করুন
-                    </Button>
                 </Surface>
 
                 {/* Basic Information */}
@@ -405,13 +428,6 @@ const styles = StyleSheet.create({
         marginBottom: spacing.lg,
         borderRadius: theme.roundness,
         backgroundColor: theme.colors.surface,
-    },
-    avatar: {
-        backgroundColor: theme.colors.primary,
-        marginBottom: spacing.md,
-    },
-    changePhotoButton: {
-        marginTop: spacing.sm,
     },
     formCard: {
         marginBottom: spacing.lg,
