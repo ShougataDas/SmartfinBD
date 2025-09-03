@@ -28,36 +28,6 @@ import { useUserStore } from '@/store/userStore';
 import { ProfilePictureSelector } from '@/components/common/ProfilePictureSelector';
 import { ImageService } from '@/services/imageService';
 
-// interface EditProfileForm {
-//     name: string;
-//     email: string;
-//     phone?: string | null;       // 👈 allow null
-//     age: number;
-//     gender?: 'male' | 'female' | 'other';
-//     occupation?: string | null;  // 👈 allow null
-// }
-// const editProfileSchema = yup.object().shape({
-//     name: yup
-//         .string()
-//         .min(2, 'নাম কমপক্ষে ২ অক্ষরের হতে হবে')
-//         .required('নাম আবশ্যক'),
-//     email: yup
-//         .string()
-//         .email('সঠিক ইমেইল ঠিকানা দিন')
-//         .required('ইমেইল আবশ্যক'),
-//     phone: yup
-//         .string()
-//         .matches(/^(\+88)?01[3-9]\d{8}$/, 'সঠিক মোবাইল নম্বর দিন')
-//         .nullable()
-//         .optional(),   // 👈 makes it truly optional
-//     age: yup
-//         .number()
-//         .min(18, 'বয়স কমপক্ষে ১৮ বছর হতে হবে')
-//         .max(100, 'বয়স ১০০ বছরের বেশি হতে পারে না')
-//         .required('বয়স আবশ্যক'),
-//     occupation: yup.string().nullable().optional(), // 👈 same here
-// });
-
 const editProfileSchema = yup.object({
     name: yup.string().min(2, 'নাম কমপক্ষে ২ অক্ষরের হতে হবে').required('নাম আবশ্যক'),
     email: yup.string().email('সঠিক ইমেইল ঠিকানা দিন').required('ইমেইল আবশ্যক'),
@@ -77,8 +47,6 @@ const editProfileSchema = yup.object({
 
 type EditProfileForm = yup.InferType<typeof editProfileSchema>;
 
-
-
 export const EditProfileScreen: React.FC = () => {
     const navigation = useNavigation();
     const { user, updateUser } = useUserStore();
@@ -92,7 +60,7 @@ export const EditProfileScreen: React.FC = () => {
         handleSubmit,
         formState: { errors, isValid, isDirty },
     } = useForm<EditProfileForm>({
-        resolver: yupResolver(editProfileSchema) as Resolver<EditProfileForm>, // 👈 cast fixes resolver mismatch
+        resolver: yupResolver(editProfileSchema) as Resolver<EditProfileForm>,
         mode: 'onChange',
         defaultValues: {
             name: user?.name || '',
@@ -108,6 +76,12 @@ export const EditProfileScreen: React.FC = () => {
         { value: 'male', label: 'পুরুষ' },
         { value: 'female', label: 'মহিলা' },
     ];
+
+    // Check if profile picture has changed
+    const isProfilePictureChanged = profilePictureUri !== (user?.profilePicture || null);
+
+    // Check if there are any changes (form fields OR profile picture)
+    const hasChanges = isDirty || isProfilePictureChanged;
 
     const onSubmit = async (data: EditProfileForm) => {
         setIsLoading(true);
@@ -172,7 +146,7 @@ export const EditProfileScreen: React.FC = () => {
     };
 
     const handleCancel = () => {
-        if (isDirty) {
+        if (hasChanges) {
             Alert.alert(
                 'পরিবর্তন বাতিল করুন',
                 'আপনার করা পরিবর্তনগুলো সংরক্ষিত হবে না। আপনি কি নিশ্চিত?',
@@ -402,7 +376,7 @@ export const EditProfileScreen: React.FC = () => {
                         mode="contained"
                         onPress={handleSubmit(onSubmit)}
                         loading={isLoading}
-                        disabled={!isValid || !isDirty || isLoading}
+                        disabled={!isValid || !hasChanges || isLoading}
                         style={styles.saveButton}
                         icon="content-save">
                         সংরক্ষণ করুন

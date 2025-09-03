@@ -42,7 +42,7 @@ export const useInvestmentStore = create<InvestmentState>((set, get) => ({
           id: "1",
           userId: "user123",
           name: "5-Year Sanchayapatra",
-          type: InvestmentType.Sanchayapatra,
+          type: "Sanchayapatra" as unknown as InvestmentType,
           amount: 100000,
           currentValue: 108500,
           expectedReturn: 8.5,
@@ -165,12 +165,12 @@ export const useInvestmentStore = create<InvestmentState>((set, get) => ({
         totalInvestment: 0,
         goalProgress: 0,
       };
-      const recommendations =
-        InvestmentRecommendationService.generateRecommendations(
-          dummyUser,
-          profile,
-          riskAssessment
-        );
+      const service = new InvestmentRecommendationService();
+      const recommendations = await (service as any).generateRecommendations(
+        dummyUser,
+        profile,
+        riskAssessment
+      );
       set({ recommendations, isLoading: false });
     } catch (err) {
       logger.error("Failed to generate recommendations:", err);

@@ -59,7 +59,7 @@ export class InvestmentRecommendationService {
     // ensure expectedReturn is a number for arithmetic
     const expectedReturn = Number((investment as any).expectedReturn) || 0
 
-    if (investment.type === InvestmentType.Sanchayapatra) {
+    if (investment.type === (InvestmentType as any).Sanchayapatra) {
       const sanchayapatraDetails = specificDetails as any
       const taxRate = amount <= 500000 ? 5 : 10
       return {
