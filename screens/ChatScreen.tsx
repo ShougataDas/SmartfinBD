@@ -27,6 +27,42 @@ import { useChatStore } from "@/store/chatStore";
 import { ChatService } from "@/services/chatService";
 import { ChatMessage, MessageType } from "@/types";
 
+// Helper function to format time safely
+const formatMessageTime = (timestamp: Date | string | number | undefined): string => {
+  try {
+    let date: Date;
+
+    if (!timestamp) {
+      date = new Date();
+    } else if (timestamp instanceof Date) {
+      date = timestamp;
+    } else if (typeof timestamp === 'string' || typeof timestamp === 'number') {
+      date = new Date(timestamp);
+    } else {
+      date = new Date();
+    }
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      date = new Date();
+    }
+
+    // Format time manually to avoid locale issues
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const formattedHours = hours.toString().padStart(2, '0');
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+
+    return `${formattedHours}:${formattedMinutes}`;
+  } catch (error) {
+    console.warn('Error formatting message time:', error);
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  }
+};
+
 const ChatScreen: React.FC = () => {
   const { user, financialProfile } = useUserStore();
   const { messages, isLoading, isTyping, sendMessage, addMessage, clearMessages, setLoading } =
@@ -181,10 +217,7 @@ const ChatScreen: React.FC = () => {
               : styles.assistantMessageTime,
           ]}
         >
-          {(message.timestamp || new Date()).toLocaleTimeString("bn-BD", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          {formatMessageTime(message.timestamp)}
         </Text>
       </Surface>
     </View>
@@ -491,4 +524,5 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
 });
+
 export default ChatScreen;
