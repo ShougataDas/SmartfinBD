@@ -1,4 +1,4 @@
-import { ChatMessage, ChatResponse, User, FinancialProfile } from "@/types";
+import { ChatMessage, ChatResponse, User, FinancialProfile, MessageType } from "@/types";
 
 /**
  * AI Chat Service
@@ -25,10 +25,10 @@ interface OpenAIResponse {
 }
 
 export class ChatService {
-  private static readonly API_URL =
-    "https://api.openai.com/v1/chat/completions";
+  private static readonly API_URL = "https://api.openai.com/v1/chat/completions";
   private static readonly MODEL = "gpt-3.5-turbo";
   private static readonly MAX_TOKENS = 1000;
+  private static readonly API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
   /**
    * Get system prompt for financial advisor
@@ -49,6 +49,7 @@ User Profile:
 - Dependents: ${financialProfile.dependents}
 - Employment: ${financialProfile.employmentType}
 - Income Stability: ${financialProfile.incomeStability}
+- Risk Tolerance: ${user.riskTolerance || 'Not assessed'}
 `
         : "";
 
@@ -64,12 +65,13 @@ Key Guidelines:
 5. Be culturally sensitive and use appropriate local examples
 6. Always emphasize the importance of emergency funds and diversification
 7. Mention relevant tax implications in Bangladesh
-8. Keep responses concise but informative (max 200 words)
+8. Keep responses concise but informative (max 300 words)
 9. If asked about specific stocks or companies, remind users to do their own research
 10. Always include disclaimers about investment risks
+11. Use emojis and bullet points to make responses more engaging
 
 Available Investment Options in Bangladesh:
-- Sanchayapatra (Government Savings Certificates): 8-9% annual return, very safe
+- Sanchayapatra (Government Savings Certificates): 8-11% annual return, very safe
 - DPS (Deposit Pension Scheme): 6-8% annual return, safe, good for regular savings
 - Fixed Deposits: 5-7% annual return, very safe, short-term
 - Mutual Funds: 8-15% potential return, moderate risk, professional management
@@ -95,6 +97,15 @@ Always end responses with a helpful tip or encouragement about financial plannin
     financialProfile?: FinancialProfile
   ): Promise<ChatResponse> {
     try {
+      // Check if API key is available
+      if (!this.API_KEY) {
+        console.warn('OpenAI API key not found, using fallback response');
+        return {
+          success: true,
+          message: this.getFallbackResponse(message),
+        };
+      }
+
       // Prepare conversation history
       const messages: OpenAIMessage[] = [
         {
@@ -106,10 +117,17 @@ Always end responses with a helpful tip or encouragement about financial plannin
       // Add conversation history (last 10 messages to stay within token limits)
       const recentHistory = conversationHistory.slice(-10);
       recentHistory.forEach((msg) => {
-        messages.push({
-          role: msg.isUser ? "user" : "assistant",
-          content: msg.content || msg.text || "",
-        });
+        if (msg.userId === 'ai_assistant') {
+          messages.push({
+            role: "assistant",
+            content: msg.text || msg.content || "",
+          });
+        } else {
+          messages.push({
+            role: "user",
+            content: msg.text || msg.content || "",
+          });
+        }
       });
 
       // Add current message
@@ -122,7 +140,7 @@ Always end responses with a helpful tip or encouragement about financial plannin
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${this.API_KEY}`,
         },
         body: JSON.stringify({
           model: this.MODEL,
@@ -135,9 +153,8 @@ Always end responses with a helpful tip or encouragement about financial plannin
       });
 
       if (!response.ok) {
-        throw new Error(
-          `OpenAI API error: ${response.status} ${response.statusText}`
-        );
+        console.error(`OpenAI API error: ${response.status} ${response.statusText}`);
+        throw new Error(`OpenAI API error: ${response.status}`);
       }
 
       const data: OpenAIResponse = await response.json();
@@ -158,7 +175,7 @@ Always end responses with a helpful tip or encouragement about financial plannin
 
       // Return fallback response
       return {
-        success: false,
+        success: true,
         message: this.getFallbackResponse(message),
         error: error instanceof Error ? error.message : "Unknown error",
       };
@@ -169,31 +186,150 @@ Always end responses with a helpful tip or encouragement about financial plannin
    * Get fallback response when API is unavailable
    */
   private static getFallbackResponse(userMessage: string): string {
-    const isBengali = /[\u0980-\u09FF]/.test(userMessage);
+    const isBengali = this.isBengaliMessage(userMessage);
+    const lowerMessage = userMessage.toLowerCase();
 
     if (isBengali) {
-      return `দুঃখিত, আমি এই মুহূর্তে আপনার প্রশ্নের উত্তর দিতে পারছি না। অনুগ্রহ করে পরে আবার চেষ্টা করুন।
+      // Bengali responses for common topics
+      if (
+        lowerMessage.includes("সঞ্চয়পত্র") ||
+        lowerMessage.includes("sanchayapatra")
+      ) {
+        return `🏦 **সঞ্চয়পত্র** বাংলাদেশ সরকারের একটি অত্যন্ত নিরাপদ বিনিয়োগ মাধ্যম।
 
-তবে আমি আপনাকে কিছু সাধারণ পরামর্শ দিতে পারি:
-• নিয়মিত সঞ্চয় করুন (আয়ের কমপক্ষে ২০%)
-• জরুরি তহবিল রাখুন (৬ মাসের খরচের সমান)
-• বিভিন্ন ধরনের বিনিয়োগে অর্থ ভাগ করুন
-• সঞ্চয়পত্র ও DPS নিরাপদ বিকল্প
-• বিনিয়োগের আগে ভালো করে জেনে নিন
+✅ **মূল বৈশিষ্ট্য:**
+• বার্ষিক ৮.৫-১১% সুদ
+• সরকারি গ্যারান্টি ১০০%
+• মাসিক/ত্রৈমাসিক সুদ প্রদান
+• ৫ লক্ষ টাকা পর্যন্ত ৫% কর
 
-💡 মনে রাখবেন: ধৈর্য ও নিয়মিততাই সফল বিনিয়োগের চাবিকাঠি!`;
+💡 **টিপ:** আপনার বয়স ও আয় অনুযায়ী পরিবার বা পেনশনার সঞ্চয়পত্র বেছে নিন।`;
+      }
+
+      if (
+        lowerMessage.includes("মিউচুয়াল ফান্ড") ||
+        lowerMessage.includes("mutual fund")
+      ) {
+        return `📈 **মিউচুয়াল ফান্ড** পেশাদার ব্যবস্থাপনায় বিভিন্ন কোম্পানির শেয়ারে বিনিয়োগ।
+
+💰 **প্রত্যাশিত রিটার্ন:** ১২-১৫% (বাজার অনুযায়ী)
+🎯 **ন্যূনতম বিনিয়োগ:** ৫,০০০ টাকা
+
+**সুবিধা:**
+• পেশাদার ব্যবস্থাপনা
+• ঝুঁকি বিভাজন
+• SIP সুবিধা
+• তরলতা
+
+⚠️ **ঝুঁকি:** মাঝারি থেকে উচ্চ
+
+💡 **টিপ:** দীর্ঘমেয়াদী বিনিয়োগের জন্য আদর্শ।`;
+      }
+
+      if (
+        lowerMessage.includes("স্টক") ||
+        lowerMessage.includes("stock") ||
+        lowerMessage.includes("শেয়ার")
+      ) {
+        return `🚀 **স্টক মার্কেট** উচ্চ রিটার্নের সম্ভাবনা, তবে ঝুঁকিও বেশি।
+
+📊 **সম্ভাব্য রিটার্ন:** ১৫-২৫% (দীর্ঘমেয়াদে)
+⚠️ **ঝুঁকি:** উচ্চ
+
+**শুরু করার টিপস:**
+১. ভালো কোম্পানি নির্বাচন
+২. কম অর্থ দিয়ে শুরু
+৩. দীর্ঘমেয়াদী দৃষ্টিভঙ্গি
+৪. বাজার গবেষণা
+৫. বিভিন্ন সেক্টরে বিনিয়োগ
+
+💡 **টিপ:** পোর্টফোলিওর ২০-৩০% স্টকে রাখুন।`;
+      }
+
+      if (lowerMessage.includes("dps") || lowerMessage.includes("ডিপিএস")) {
+        return `💳 **DPS** (Deposit Pension Scheme) দীর্ঘমেয়াদী সঞ্চয় পরিকল্পনা।
+
+💵 **বৈশিষ্ট্য:**
+• মাসিক ৫০০ টাকা থেকে শুরু
+• ৫-২০ বছরের মেয়াদ
+• ৭-৮% বার্ষিক সুদ
+• কোন প্রাথমিক বিনিয়োগ নয়
+
+**সুবিধা:**
+• নিয়মিত সঞ্চয়ের অভ্যাস
+• নিরাপদ বিনিয়োগ
+• মেয়াদ শেষে বড় অংক
+• ৮০% পর্যন্ত ঋণ সুবিধা
+
+💡 **টিপ:** নিয়মিত আয়ের জন্য আদর্শ।`;
+      }
+
+      // Default Bengali response
+      return `🤝 **আমি আপনাকে সাহায্য করতে পারি:**
+
+📊 **বিনিয়োগ পরামর্শ:**
+• সঞ্চয়পত্র - নিরাপদ ৮-১১% রিটার্ন
+• DPS - মাসিক সঞ্চয় পরিকল্পনা
+• মিউচুয়াল ফান্ড - পেশাদার ব্যবস্থাপনা
+• স্টক মার্কেট - উচ্চ রিটার্ন সম্ভাবনা
+
+💰 **আর্থিক পরিকল্পনা:**
+• জরুরি তহবিল (৬ মাসের খরচ)
+• ঝুঁকি মূল্যায়ন
+• লক্ষ্য নির্ধারণ
+• কর পরিকল্পনা
+
+💡 **টিপ:** আপনার প্রোফাইল সম্পূর্ণ করুন যাতে আরও ব্যক্তিগতকৃত পরামর্শ পেতে পারেন!
+
+আরও কোনো নির্দিষ্ট প্রশ্ন থাকলে জিজ্ঞাসা করুন! 😊`;
     } else {
-      return `I apologize, but I'm currently unable to process your question. Please try again later.
+      // English responses
+      if (
+        lowerMessage.includes("sanchayapatra") ||
+        lowerMessage.includes("savings certificate")
+      ) {
+        return `🏦 **Sanchayapatra** is Bangladesh government's safest investment option.
 
-However, here are some general financial tips for Bangladesh:
-• Save regularly (at least 20% of income)
-• Maintain emergency fund (6 months expenses)
-• Diversify your investments
-• Consider Sanchayapatra and DPS for safe returns
-• Research before investing in stocks or mutual funds
+✅ **Key Features:**
+• 8.5-11% annual return
+• 100% government guarantee
+• Monthly/quarterly interest payment
+• 5% tax on amounts up to 5 lakh
 
-💡 Remember: Patience and consistency are key to successful investing!`;
+💡 **Tip:** Choose between Poribar or Pensioner Sanchayapatra based on your eligibility.`;
+      }
+
+      // Default English response
+      return `🤝 **I can help you with:**
+
+📊 **Investment Advice:**
+• Sanchayapatra - Safe 8-11% returns
+• DPS - Monthly savings plan
+• Mutual Funds - Professional management
+• Stock Market - High return potential
+
+💰 **Financial Planning:**
+• Emergency fund planning
+• Risk assessment
+• Goal setting
+• Tax planning
+
+💡 **Tip:** Complete your profile for more personalized advice!
+
+Feel free to ask any specific questions! 😊`;
     }
+  }
+
+  /**
+   * Get system prompt for financial advisor
+   */
+  static async sendMessageToAPI(
+    message: string,
+    conversationHistory: ChatMessage[] = [],
+    user?: User,
+    financialProfile?: FinancialProfile
+  ): Promise<ChatResponse> {
+    return this.sendMessage(message, conversationHistory, user, financialProfile);
   }
 
   /**
@@ -377,7 +513,7 @@ However, here are some general financial tips for Bangladesh:
   static isBengaliMessage(message: string): boolean {
     const bengaliCharCount = (message.match(/[\u0980-\u09FF]/g) || []).length;
     const totalCharCount = message.replace(/\s/g, "").length;
-    return bengaliCharCount / totalCharCount > 0.3;
+    return totalCharCount > 0 && bengaliCharCount / totalCharCount > 0.3;
   }
 
   /**

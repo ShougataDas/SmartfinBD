@@ -29,7 +29,7 @@ import { ChatMessage, MessageType } from "@/types";
 
 const ChatScreen: React.FC = () => {
   const { user, financialProfile } = useUserStore();
-  const { messages, isLoading, addMessage, clearMessages, setLoading } =
+  const { messages, isLoading, isTyping, sendMessage, addMessage, clearMessages, setLoading } =
     useChatStore();
 
   const [inputText, setInputText] = useState("");
@@ -54,22 +54,19 @@ const ChatScreen: React.FC = () => {
     React.useCallback(() => {
       if (messages.length === 0) {
         // Add welcome message
-        const welcomeMessage: ChatMessage = {
-          id: Date.now().toString(),
+        addMessage({
           userId: "ai_assistant",
           text:
             language === "bn"
-              ? "নমস্কার! আমি SmartFin BD এর AI সহায়ক। আপনার আর্থিক প্রশ্ন ও বিনিয়োগ সংক্রান্ত যেকোনো সাহায্যের জন্য আমি এখানে আছি। কীভাবে সাহায্য করতে পারি?"
-              : "Hello! I'm SmartFin BD's AI assistant. I'm here to help with your financial questions and investment guidance. How can I assist you today?",
+              ? "নমস্কার! 🙏 আমি SmartFin BD এর AI সহায়ক। আপনার আর্থিক প্রশ্ন ও বিনিয়োগ সংক্রান্ত যেকোনো সাহায্যের জন্য আমি এখানে আছি। কীভাবে সাহায্য করতে পারি? 😊"
+              : "Hello! 👋 I'm SmartFin BD's AI assistant. I'm here to help with your financial questions and investment guidance. How can I assist you today? 😊",
           content:
             language === "bn"
-              ? "নমস্কার! আমি SmartFin BD এর AI সহায়ক। আপনার আর্থিক প্রশ্ন ও বিনিয়োগ সংক্রান্ত যেকোনো সাহায্যের জন্য আমি এখানে আছি। কীভাবে সাহায্য করতে পারি?"
-              : "Hello! I'm SmartFin BD's AI assistant. I'm here to help with your financial questions and investment guidance. How can I assist you today?",
+              ? "নমস্কার! 🙏 আমি SmartFin BD এর AI সহায়ক। আপনার আর্থিক প্রশ্ন ও বিনিয়োগ সংক্রান্ত যেকোনো সাহায্যের জন্য আমি এখানে আছি। কীভাবে সাহায্য করতে পারি? 😊"
+              : "Hello! 👋 I'm SmartFin BD's AI assistant. I'm here to help with your financial questions and investment guidance. How can I assist you today? 😊",
           isUser: false,
           type: MessageType.Text,
-          timestamp: new Date(),
-        };
-        addMessage(welcomeMessage);
+        });
       }
     }, [language])
   );
@@ -94,62 +91,19 @@ const ChatScreen: React.FC = () => {
       setLanguage(isBengali ? "bn" : "en");
     }
 
-    // Add user message
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      userId: user?.id || "user",
-      text: textToSend,
-      isUser: true,
-      type: MessageType.Text,
-      timestamp: new Date(),
-    };
-    addMessage(userMessage);
     setInputText("");
     setShowSuggestions(false);
     Keyboard.dismiss();
 
-    // Show loading
-    setLoading(true);
-
     try {
-      // Get AI response
-      const response = await ChatService.sendMessage(
+      // Send message through store which handles user message and AI response
+      await sendMessage(
         textToSend,
-        messages,
         user || undefined,
         financialProfile || undefined
       );
-
-      if (response.success) {
-        const assistantMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          userId: "ai_assistant",
-          text: ChatService.formatMessage(response.message),
-          isUser: false,
-          type: MessageType.Text,
-          timestamp: new Date(),
-        };
-        addMessage(assistantMessage);
-      } else {
-        throw new Error(response.error || "Failed to get response");
-      }
     } catch (error) {
       console.error("Chat error:", error);
-
-      const errorMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        userId: "ai_assistant",
-        text:
-          language === "bn"
-            ? "দুঃখিত, একটি সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।"
-            : "Sorry, there was an error. Please try again.",
-        isUser: false,
-        type: MessageType.Text,
-        timestamp: new Date(),
-      };
-      addMessage(errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -326,7 +280,7 @@ const ChatScreen: React.FC = () => {
       >
         {messages.map(renderMessage)}
 
-        {isLoading && (
+        {(isLoading || isTyping) && (
           <View style={styles.loadingContainer}>
             <Surface style={styles.loadingBubble} elevation={1}>
               <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -366,7 +320,7 @@ const ChatScreen: React.FC = () => {
             size={24}
             mode="contained"
             onPress={() => handleSendMessage()}
-            disabled={!inputText.trim() || isLoading}
+            disabled={!inputText.trim() || isLoading || isTyping}
             style={styles.sendButton}
           />
         </View>
