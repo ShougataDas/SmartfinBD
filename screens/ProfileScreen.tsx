@@ -19,13 +19,41 @@ import { useUserStore } from "@/store/userStore";
 import { useAuthStore } from "@/store/authStore";
 import { formatCurrency } from "@/utils/formatters";
 import { ProfilePictureSelector } from "@/components/common/ProfilePictureSelector";
+import { BiometricService } from "@/services/biometricService";
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation();
   const { user, updateUser } = useUserStore();
-  const { logout } = useAuthStore();
+  const { logout, biometricEnabled, biometricAvailable, enableBiometricAuth, disableBiometricAuth, checkBiometricStatus } = useAuthStore();
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
-  const [biometricEnabled, setBiometricEnabled] = React.useState(false);
+  const [biometricTypes, setBiometricTypes] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    checkBiometricStatus();
+    BiometricService.getAvailableBiometricTypes().then(setBiometricTypes);
+  }, []);
+
+  const handleBiometricToggle = async (enabled: boolean) => {
+    if (enabled) {
+      if (!user?.email) {
+        Alert.alert('ত্রুটি', 'ব্যবহারকারীর ইমেইল পাওয়া যায়নি।');
+        return;
+      }
+      
+      // For demo purposes, we'll use a default password
+      // In a real app, you'd need to ask for the current password
+      await enableBiometricAuth(user.email, 'demo123');
+    } else {
+      Alert.alert(
+        'বায়োমেট্রিক লগইন বন্ধ করুন',
+        'আপনি কি বায়োমেট্রিক লগইন বন্ধ করতে চান?',
+        [
+          { text: 'বাতিল', style: 'cancel' },
+          { text: 'বন্ধ করুন', onPress: () => disableBiometricAuth() },
+        ]
+      );
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert("লগ আউট", "আপনি কি নিশ্চিত যে লগ আউট করতে চান?", [
@@ -63,11 +91,7 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleSecurity = () => {
-    Alert.alert(
-      "নিরাপত্তা সেটিংস",
-      "এই ফিচারটি শীঘ্রই আসছে।",
-      [{ text: "ঠিক আছে" }]
-    );
+    navigation.navigate("BiometricSettings" as never);
   };
 
   const handleHelpSupport = () => {
@@ -128,7 +152,7 @@ const ProfileScreen: React.FC = () => {
     },
     {
       title: "নিরাপত্তা",
-      description: "পাসওয়ার্ড ও নিরাপত্তা সেটিংস",
+      description: "বায়োমেট্রিক ও নিরাপত্তা সেটিংস",
       icon: "shield-account",
       onPress: handleSecurity,
     },
@@ -285,26 +309,28 @@ const ProfileScreen: React.FC = () => {
 
           <Divider />
 
-          <List.Item
-            title="বায়োমেট্রিক লগইন"
-            description="ফিঙ্গারপ্রিন্ট/ফেস আইডি দিয়ে লগইন"
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon="fingerprint"
-                color={theme.colors.primary}
-              />
-            )}
-            right={() => (
-              <Switch
-                value={biometricEnabled}
-                onValueChange={setBiometricEnabled}
-              />
-            )}
-            style={styles.menuItem}
-          />
+          {biometricAvailable && (
+            <List.Item
+              title="বায়োমেট্রিক লগইন"
+              description={`${biometricTypes.join('/')} দিয়ে লগইন`}
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="fingerprint"
+                  color={theme.colors.primary}
+                />
+              )}
+              right={() => (
+                <Switch
+                  value={biometricEnabled}
+                  onValueChange={handleBiometricToggle}
+                />
+              )}
+              style={styles.menuItem}
+            />
+          )}
 
-          <Divider />
+          {biometricAvailable && <Divider />}
 
           <List.Item
             title="ভাষা"

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LoginForm, RegisterForm } from '@/types';
+import { BiometricService } from '@/services/biometricService';
 
 interface AuthState {
     isAuthenticated: boolean;
@@ -10,6 +11,8 @@ interface AuthState {
     refreshToken: string | null;
     isLoading: boolean;
     error: string | null;
+    biometricEnabled: boolean;
+    biometricAvailable: boolean;
 }
 
 interface AuthActions {
@@ -19,6 +22,10 @@ interface AuthActions {
     clearError: () => void;
     setOnboardingCompleted: () => void;
     refreshAuthToken: () => Promise<void>;
+    loginWithBiometrics: () => Promise<void>;
+    enableBiometricAuth: (email: string, password: string) => Promise<void>;
+    disableBiometricAuth: () => Promise<void>;
+    checkBiometricStatus: () => Promise<void>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -33,6 +40,8 @@ export const useAuthStore = create<AuthStore>()(
             refreshToken: null,
             isLoading: false,
             error: null,
+            biometricEnabled: false,
+            biometricAvailable: false,
 
             // Actions
             login: async (credentials: LoginForm) => {
@@ -55,6 +64,16 @@ export const useAuthStore = create<AuthStore>()(
                             error: null,
                         });
                     } else if (credentials.email && credentials.password) {
+                        // Check if biometric should be offered
+                        const capability = await BiometricService.checkBiometricCapability();
+                        if (capability.isAvailable && !get().biometricEnabled) {
+                            setTimeout(() => {
+                                BiometricService.showBiometricSetupPrompt(
+                                    () => get().enableBiometricAuth(credentials.email, credentials.password),
+                                    () => console.log('Biometric setup skipped')
+                                );
+                            }, 1000);
+                        }
                         // Allow any email/password for demo purposes
                         const mockToken = 'mock_jwt_token_' + Date.now();
                         const mockRefreshToken = 'mock_refresh_token_' + Date.now();
@@ -67,6 +86,16 @@ export const useAuthStore = create<AuthStore>()(
                             error: null,
                         });
                     } else {
+                        // Check if biometric should be offered
+                        const capability = await BiometricService.checkBiometricCapability();
+                        if (capability.isAvailable && !get().biometricEnabled) {
+                            setTimeout(() => {
+                                BiometricService.showBiometricSetupPrompt(
+                                    () => get().enableBiometricAuth(credentials.email, credentials.password),
+                                    () => console.log('Biometric setup skipped')
+                                );
+                            }, 1000);
+                        }
                         throw new Error('Invalid credentials');
                     }
                 } catch (error) {
@@ -102,6 +131,16 @@ export const useAuthStore = create<AuthStore>()(
                         error: null,
                     });
                 } catch (error) {
+                    // Offer biometric setup after successful registration
+                    const capability = await BiometricService.checkBiometricCapability();
+                    if (capability.isAvailable) {
+                        setTimeout(() => {
+                            BiometricService.showBiometricSetupPrompt(
+                                () => get().enableBiometricAuth(userData.email, userData.password),
+                                () => console.log('Biometric setup skipped')
+                            );
+                        }, 1000);
+                    }
                     set({
                         isLoading: false,
                         error: error instanceof Error ? error.message : 'Registration failed',
@@ -110,6 +149,93 @@ export const useAuthStore = create<AuthStore>()(
                 }
             },
 
+            loginWithBiometrics: async () => {
+                set({ isLoading: true, error: null });
+
+                try {
+                    const result = await BiometricService.loginWithBiometrics();
+
+                    if (result.success && result.credentials) {
+                        // Use stored credentials to login
+                        await get().login({
+                            email: result.credentials.email,
+                            password: result.credentials.password,
+                        });
+                    } else {
+                        throw new Error(result.error || 'Biometric login failed');
+                    }
+                } catch (error) {
+                    set({
+                        isLoading: false,
+                        error: error instanceof Error ? error.message : 'Biometric login failed',
+                    });
+                    throw error;
+                }
+            },
+
+            enableBiometricAuth: async (email: string, password: string) => {
+                try {
+                    const result = await BiometricService.enableBiometricAuth(email, password);
+
+                    if (result.success) {
+                        set({ biometricEnabled: true });
+                        Alert.alert(
+                            'বায়োমেট্রিক লগইন সক্রিয়',
+                            'আপনি এখন ফিঙ্গারপ্রিন্ট বা ফেস আইডি দিয়ে লগইন করতে পারবেন।',
+                            [{ text: 'ঠিক আছে' }]
+                        );
+                    } else {
+                        throw new Error(result.error || 'Failed to enable biometric auth');
+                    }
+                } catch (error) {
+                    Alert.alert(
+                        'বায়োমেট্রিক সেটআপ ব্যর্থ',
+                        error instanceof Error ? error.message : 'বায়োমেট্রিক প্রমাণীকরণ সক্রিয় করতে সমস্যা হয়েছে',
+                        [{ text: 'ঠিক আছে' }]
+                    );
+                }
+            },
+
+            disableBiometricAuth: async () => {
+                try {
+                    const result = await BiometricService.disableBiometricAuth();
+
+                    if (result.success) {
+                        set({ biometricEnabled: false });
+                        Alert.alert(
+                            'বায়োমেট্রিক লগইন বন্ধ',
+                            'বায়োমেট্রিক লগইন সফলভাবে বন্ধ করা হয়েছে।',
+                            [{ text: 'ঠিক আছে' }]
+                        );
+                    } else {
+                        throw new Error(result.error || 'Failed to disable biometric auth');
+                    }
+                } catch (error) {
+                    Alert.alert(
+                        'ত্রুটি',
+                        error instanceof Error ? error.message : 'বায়োমেট্রিক প্রমাণীকরণ বন্ধ করতে সমস্যা হয়েছে',
+                        [{ text: 'ঠিক আছে' }]
+                    );
+                }
+            },
+
+            checkBiometricStatus: async () => {
+                try {
+                    const capability = await BiometricService.checkBiometricCapability();
+                    const isEnabled = await BiometricService.isBiometricEnabled();
+
+                    set({
+                        biometricAvailable: capability.isAvailable,
+                        biometricEnabled: isEnabled && capability.isAvailable,
+                    });
+                } catch (error) {
+                    console.error('Error checking biometric status:', error);
+                    set({
+                        biometricAvailable: false,
+                        biometricEnabled: false,
+                    });
+                }
+            },
             logout: () => {
                 set({
                     isAuthenticated: false,
@@ -159,9 +285,14 @@ export const useAuthStore = create<AuthStore>()(
                 hasCompletedOnboarding: state.hasCompletedOnboarding,
                 token: state.token,
                 refreshToken: state.refreshToken,
+                biometricEnabled: state.biometricEnabled,
             }),
             onRehydrateStorage: () => (state) => {
                 console.log('Auth store rehydrated:', state);
+                // Check biometric status after rehydration
+                if (state) {
+                    state.checkBiometricStatus();
+                }
             },
         }
     )

@@ -25,6 +25,7 @@ import { useNavigation } from '@react-navigation/native';
 import { theme, spacing } from '@/constants/theme';
 import { useAuthStore } from '@/store/authStore';
 import { RegisterForm } from '@/types';
+import { BiometricSetupCard } from '@/components/auth/BiometricSetupCard';
 
 // Schema compatible with RegisterForm type
 const registerSchema = yup.object().shape({
@@ -49,11 +50,13 @@ const registerSchema = yup.object().shape({
 
 export const RegisterScreen: React.FC = () => {
     const navigation = useNavigation();
-    const { register, isLoading, error } = useAuthStore();
+    const { register, isLoading, error, biometricAvailable } = useAuthStore();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+    const [showBiometricSetup, setShowBiometricSetup] = useState(false);
+    const [registeredCredentials, setRegisteredCredentials] = useState<{ email: string; password: string } | null>(null);
 
     const {
         control,
@@ -118,11 +121,23 @@ export const RegisterScreen: React.FC = () => {
             };
 
             await register(submitData);
-            Alert.alert(
-                'রেজিস্ট্রেশন সফল',
-                'আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে।',
-                [{ text: 'ঠিক আছে' }]
-            );
+            
+            // Store credentials for biometric setup
+            setRegisteredCredentials({
+                email: submitData.email,
+                password: submitData.password,
+            });
+
+            // Show biometric setup if available
+            if (biometricAvailable) {
+                setShowBiometricSetup(true);
+            } else {
+                Alert.alert(
+                    'রেজিস্ট্রেশন সফল',
+                    'আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে।',
+                    [{ text: 'ঠিক আছে' }]
+                );
+            }
         } catch (error) {
             Alert.alert(
                 'রেজিস্ট্রেশন ব্যর্থ',
@@ -402,6 +417,30 @@ export const RegisterScreen: React.FC = () => {
                         </View>
                     </Card.Content>
                 </Card>
+
+                {/* Biometric Setup Card */}
+                {showBiometricSetup && registeredCredentials && (
+                    <BiometricSetupCard
+                        userEmail={registeredCredentials.email}
+                        userPassword={registeredCredentials.password}
+                        onSetupComplete={() => {
+                            setShowBiometricSetup(false);
+                            Alert.alert(
+                                'রেজিস্ট্রেশন সম্পূর্ণ',
+                                'আপনার অ্যাকাউন্ট তৈরি হয়েছে এবং বায়োমেট্রিক লগইন সক্রিয় করা হয়েছে।',
+                                [{ text: 'ঠিক আছে' }]
+                            );
+                        }}
+                        onSkip={() => {
+                            setShowBiometricSetup(false);
+                            Alert.alert(
+                                'রেজিস্ট্রেশন সফল',
+                                'আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে।',
+                                [{ text: 'ঠিক আছে' }]
+                            );
+                        }}
+                    />
+                )}
             </ScrollView>
         </KeyboardAvoidingView>
     );

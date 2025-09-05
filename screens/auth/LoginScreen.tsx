@@ -25,6 +25,7 @@ import { useNavigation } from '@react-navigation/native';
 import { theme, spacing } from '@/constants/theme';
 import { useAuthStore } from '@/store/authStore';
 import { LoginForm } from '@/types';
+import { BiometricService } from '@/services/biometricService';
 
 const loginSchema = yup.object().shape({
     email: yup
@@ -39,10 +40,15 @@ const loginSchema = yup.object().shape({
 
 export const LoginScreen: React.FC = () => {
     const navigation = useNavigation();
-    const { login, isLoading, error } = useAuthStore();
+    const { login, loginWithBiometrics, isLoading, error, biometricEnabled, biometricAvailable, checkBiometricStatus } = useAuthStore();
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
+    const [biometricTypes, setBiometricTypes] = useState<string[]>([]);
 
+    React.useEffect(() => {
+        checkBiometricStatus();
+        BiometricService.getAvailableBiometricTypes().then(setBiometricTypes);
+    }, []);
     const {
         control,
         handleSubmit,
@@ -80,12 +86,13 @@ export const LoginScreen: React.FC = () => {
         );
     };
 
-    const handleBiometricLogin = () => {
-        Alert.alert(
-            'বায়োমেট্রিক লগইন',
-            'এই ফিচারটি শীঘ্রই আসছে।',
-            [{ text: 'ঠিক আছে' }]
-        );
+    const handleBiometricLogin = async () => {
+        try {
+            await loginWithBiometrics();
+        } catch (error) {
+            // Error is already handled in the store
+            console.log('Biometric login failed:', error);
+        }
     };
 
     return (
@@ -221,13 +228,16 @@ export const LoginScreen: React.FC = () => {
                         </View>
 
                         {/* Biometric Login */}
-                        <Button
-                            mode="outlined"
-                            onPress={handleBiometricLogin}
-                            style={styles.biometricButton}
-                            icon="fingerprint">
-                            ফিঙ্গারপ্রিন্ট দিয়ে লগইন
-                        </Button>
+                        {biometricAvailable && biometricEnabled && (
+                            <Button
+                                mode="outlined"
+                                onPress={handleBiometricLogin}
+                                style={styles.biometricButton}
+                                icon="fingerprint"
+                                loading={isLoading}>
+                                {biometricTypes.join('/')} দিয়ে লগইন
+                            </Button>
+                        )}
 
                         {/* Register Link */}
                         <View style={styles.registerContainer}>

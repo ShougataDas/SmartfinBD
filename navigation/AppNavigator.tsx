@@ -21,6 +21,7 @@ import DPSScreen from "@/screens/investment/DPSScreen"
 import FixedDepositScreen from "@/screens/investment/FixedDepositScreen"
 import StockMarketScreen from "@/screens/investment/StockMarketScreen"
 import MutualFundScreen from "@/screens/investment/MutualFundScreen"
+import { BiometricSettingsScreen } from "@/screens/security/BiometricSettingsScreen"
 import type { InvestmentType } from "@/types"
 import { theme } from "@/constants/theme"
 import { useAuthStore } from "@/store/authStore"
@@ -32,6 +33,7 @@ export type RootStackParamList = {
   FinancialProfile: undefined
   RiskAssessment: undefined
   EditProfile: undefined
+  BiometricSettings: undefined
   InvestmentDetails: { investmentId: string }
   SanchayapatraDetails: undefined
   InvestmentForm: { investmentType: InvestmentType; investmentName: string }
@@ -171,6 +173,16 @@ export const AppNavigator: React.FC = () => {
             options={{
               headerShown: true,
               title: "প্রোফাইল সম্পাদনা",
+              headerStyle: { backgroundColor: theme.colors.primary },
+              headerTintColor: theme.colors.onPrimary,
+            }}
+          />
+          <Stack.Screen
+            name="BiometricSettings"
+            component={BiometricSettingsScreen}
+            options={{
+              headerShown: true,
+              title: "বায়োমেট্রিক নিরাপত্তা",
               headerStyle: { backgroundColor: theme.colors.primary },
               headerTintColor: theme.colors.onPrimary,
             }}
