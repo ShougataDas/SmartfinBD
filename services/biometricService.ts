@@ -89,15 +89,17 @@ export class BiometricService {
             } else {
                 let errorMessage = 'বায়োমেট্রিক প্রমাণীকরণ ব্যর্থ';
 
-                if (result.error === 'UserCancel') {
+                const errorKey = result.error ? String(result.error) : '';
+
+                if (errorKey === 'UserCancel') {
                     errorMessage = 'ব্যবহারকারী বাতিল করেছেন';
-                } else if (result.error === 'UserFallback') {
+                } else if (errorKey === 'UserFallback') {
                     errorMessage = 'বিকল্প পদ্ধতি ব্যবহার করুন';
-                } else if (result.error === 'BiometryNotAvailable') {
+                } else if (errorKey === 'BiometryNotAvailable') {
                     errorMessage = 'বায়োমেট্রিক প্রমাণীকরণ উপলব্ধ নেই';
-                } else if (result.error === 'BiometryNotEnrolled') {
+                } else if (errorKey === 'BiometryNotEnrolled') {
                     errorMessage = 'বায়োমেট্রিক তথ্য নিবন্ধিত নেই';
-                } else if (result.error === 'BiometryLockout') {
+                } else if (errorKey === 'BiometryLockout') {
                     errorMessage = 'অনেকবার ভুল চেষ্টা। কিছুক্ষণ পর আবার চেষ্টা করুন';
                 }
 

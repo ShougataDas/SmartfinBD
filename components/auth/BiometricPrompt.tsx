@@ -95,7 +95,7 @@ export const BiometricPrompt: React.FC<BiometricPromptProps> = ({
             onRequestClose={onCancel}
         >
             <View style={styles.modalContainer}>
-                <Surface style={styles.promptContainer} elevation={8}>
+                <Surface style={styles.promptContainer}>
                     <Card.Content style={styles.content}>
                         <View style={styles.header}>
                             <Animated.View style={[styles.iconContainer, animatedStyle]}>

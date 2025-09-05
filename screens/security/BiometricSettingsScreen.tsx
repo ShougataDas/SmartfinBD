@@ -21,7 +21,7 @@ import { theme, spacing } from '@/constants/theme';
 import { BiometricService } from '@/services/biometricService';
 import { useAuthStore } from '@/store/authStore';
 import { useUserStore } from '@/store/userStore';
-
+import { BiometricSetupCard } from '@/components/auth/BiometricSetupCard';
 export const BiometricSettingsScreen: React.FC = () => {
     const navigation = useNavigation();
     const { 
@@ -35,6 +35,8 @@ export const BiometricSettingsScreen: React.FC = () => {
 
     const [biometricTypes, setBiometricTypes] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [showBiometricSetup, setShowBiometricSetup] = useState(false);
+    const [registeredCredentials, setRegisteredCredentials] = useState<{ email: string; password: string } | null>(null);
 
     useEffect(() => {
         checkBiometricStatus();
