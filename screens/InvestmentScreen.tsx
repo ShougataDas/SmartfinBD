@@ -244,7 +244,7 @@ const InvestmentScreen: React.FC = () => {
         </View>
       </ScrollView>
 
-      <FAB icon="plus" style={styles.fab} onPress={() => { }} label="কাস্টম প্ল্যান" />
+      {/* <FAB icon="plus" style={styles.fab} onPress={() => { }} label="কাস্টম প্ল্যান" /> */}
     </View>
   )
 }
@@ -330,13 +330,13 @@ const styles = StyleSheet.create({
   investButton: {
     flex: 1,
   },
-  fab: {
-    position: "absolute",
-    margin: spacing.md,
-    right: 0,
-    bottom: 0,
-    backgroundColor: theme.colors.primary,
-  },
+  // fab: {
+  //   position: "absolute",
+  //   margin: spacing.md,
+  //   right: 0,
+  //   bottom: 0,
+  //   backgroundColor: theme.colors.primary,
+  // },
 })
 
 export default InvestmentScreen
