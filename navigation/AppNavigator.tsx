@@ -22,6 +22,7 @@ import FixedDepositScreen from "@/screens/investment/FixedDepositScreen"
 import StockMarketScreen from "@/screens/investment/StockMarketScreen"
 import MutualFundScreen from "@/screens/investment/MutualFundScreen"
 import { BiometricSettingsScreen } from "@/screens/security/BiometricSettingsScreen"
+import RecommendationsScreen from "@/screens/RecommendationsScreen"
 import type { InvestmentType } from "@/types"
 import { theme } from "@/constants/theme"
 import { useAuthStore } from "@/store/authStore"
@@ -34,6 +35,7 @@ export type RootStackParamList = {
   RiskAssessment: undefined
   EditProfile: undefined
   BiometricSettings: undefined
+  Recommendations: undefined
   InvestmentDetails: { investmentId: string }
   SanchayapatraDetails: undefined
   InvestmentForm: { investmentType: InvestmentType; investmentName: string }
@@ -163,6 +165,16 @@ export const AppNavigator: React.FC = () => {
             options={{
               headerShown: true,
               title: "ঝুঁকি মূল্যায়ন",
+              headerStyle: { backgroundColor: theme.colors.primary },
+              headerTintColor: theme.colors.onPrimary,
+            }}
+          />
+          <Stack.Screen
+            name="Recommendations"
+            component={RecommendationsScreen}
+            options={{
+              headerShown: true,
+              title: "বিনিয়োগ সুপারিশ",
               headerStyle: { backgroundColor: theme.colors.primary },
               headerTintColor: theme.colors.onPrimary,
             }}

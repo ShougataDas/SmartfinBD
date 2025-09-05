@@ -1,26 +1,24 @@
-import React, { useState, useRef } from "react";
-import { View, ScrollView, StyleSheet, Dimensions, Image } from "react-native";
-import { Button, Text, Surface, Card } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  interpolate,
-} from "react-native-reanimated";
+"use client"
 
-import { theme, spacing } from "@/constants/theme";
-import { useAuthStore } from "@/store/authStore";
+import type React from "react"
+import { useState, useRef } from "react"
+import { View, ScrollView, StyleSheet, Dimensions } from "react-native"
+import { Button, Text, Surface } from "react-native-paper"
+import Icon from "react-native-vector-icons/MaterialCommunityIcons"
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, interpolate } from "react-native-reanimated"
 
-const { width: screenWidth } = Dimensions.get("window");
+import { theme, spacing } from "@/constants/theme"
+import { useAuthStore } from "@/store/authStore"
+
+const { width: screenWidth } = Dimensions.get("window")
 
 interface OnboardingSlide {
-  id: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  icon: string;
-  color: string;
+  id: string
+  title: string
+  subtitle: string
+  description: string
+  icon: string
+  color: string
 }
 
 const onboardingData: OnboardingSlide[] = [
@@ -28,8 +26,7 @@ const onboardingData: OnboardingSlide[] = [
     id: "1",
     title: "স্বাগতম SmartFin BD তে",
     subtitle: "আপনার আর্থিক সাফল্যের সঙ্গী",
-    description:
-      "বাংলাদেশের প্রথম AI চালিত ব্যক্তিগত আর্থিক পরামর্শদাতা। আপনার আর্থিক লক্ষ্য অর্জনে আমরা আছি পাশে।",
+    description: "বাংলাদেশের প্রথম AI চালিত ব্যক্তিগত আর্থিক পরামর্শদাতা। আপনার আর্থিক লক্ষ্য অর্জনে আমরা আছি পাশে।",
     icon: "bank",
     color: theme.colors.primary,
   },
@@ -37,8 +34,7 @@ const onboardingData: OnboardingSlide[] = [
     id: "2",
     title: "স্মার্ট বিনিয়োগ পরামর্শ",
     subtitle: "বিশেষজ্ঞ পরামর্শ পান",
-    description:
-      "সঞ্চয়পত্র, DPS, মিউচুয়াল ফান্ড, স্টক মার্কেট - সব ধরনের বিনিয়োগে পান ব্যক্তিগতকৃত পরামর্শ।",
+    description: "সঞ্চয়পত্র, DPS, মিউচুয়াল ফান্ড, স্টক মার্কেট - সব ধরনের বিনিয়োগে পান ব্যক্তিগতকৃত পরামর্শ।",
     icon: "chart-line",
     color: theme.colors.secondary,
   },
@@ -46,8 +42,7 @@ const onboardingData: OnboardingSlide[] = [
     id: "3",
     title: "AI চ্যাটবট সহায়তা",
     subtitle: "২৪/৭ আর্থিক পরামর্শ",
-    description:
-      "যেকোনো সময় আপনার আর্থিক প্রশ্নের উত্তর পান আমাদের বুদ্ধিমান চ্যাটবট থেকে। বাংলা ও ইংরেজি দুই ভাষায়।",
+    description: "যেকোনো সময় আপনার আর্থিক প্রশ্নের উত্তর পান আমাদের বুদ্ধিমান চ্যাটবট থেকে। বাংলা ও ইংরেজি দুই ভাষায়।",
     icon: "robot",
     color: theme.colors.tertiary,
   },
@@ -55,130 +50,84 @@ const onboardingData: OnboardingSlide[] = [
     id: "4",
     title: "নিরাপদ ও সুরক্ষিত",
     subtitle: "আপনার তথ্য সুরক্ষিত",
-    description:
-      "ব্যাংক-গ্রেড নিরাপত্তা ব্যবস্থা। আপনার ব্যক্তিগত ও আর্থিক তথ্য সম্পূর্ণ সুরক্ষিত থাকবে।",
+    description: "ব্যাংক-গ্রেড নিরাপত্তা ব্যবস্থা। আপনার ব্যক্তিগত ও আর্থিক তথ্য সম্পূর্ণ সুরক্ষিত থাকবে।",
     icon: "shield-check",
     color: theme.colors.primary,
   },
-];
+]
 
 export const OnboardingScreen: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollViewRef = useRef<ScrollView>(null);
-  const scrollX = useSharedValue(0);
-  const { setOnboardingCompleted } = useAuthStore();
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const scrollViewRef = useRef<ScrollView>(null)
+  const scrollX = useSharedValue(0)
+  const { setOnboardingCompleted } = useAuthStore()
 
   // Create animated styles for each pagination dot individually
   const paginationStyle0 = useAnimatedStyle(() => {
-    const inputRange = [-screenWidth, 0, screenWidth];
-    const scale = interpolate(
-      scrollX.value,
-      inputRange,
-      [0.8, 1.2, 0.8],
-      "clamp"
-    );
-    const opacity = interpolate(
-      scrollX.value,
-      inputRange,
-      [0.4, 1, 0.4],
-      "clamp"
-    );
+    const inputRange = [-screenWidth, 0, screenWidth]
+    const scale = interpolate(scrollX.value, inputRange, [0.8, 1.2, 0.8], "clamp")
+    const opacity = interpolate(scrollX.value, inputRange, [0.4, 1, 0.4], "clamp")
     return {
       transform: [{ scale: withSpring(scale) }],
       opacity: withSpring(opacity),
-    };
-  });
+    }
+  })
 
   const paginationStyle1 = useAnimatedStyle(() => {
-    const inputRange = [0, screenWidth, 2 * screenWidth];
-    const scale = interpolate(
-      scrollX.value,
-      inputRange,
-      [0.8, 1.2, 0.8],
-      "clamp"
-    );
-    const opacity = interpolate(
-      scrollX.value,
-      inputRange,
-      [0.4, 1, 0.4],
-      "clamp"
-    );
+    const inputRange = [0, screenWidth, 2 * screenWidth]
+    const scale = interpolate(scrollX.value, inputRange, [0.8, 1.2, 0.8], "clamp")
+    const opacity = interpolate(scrollX.value, inputRange, [0.4, 1, 0.4], "clamp")
     return {
       transform: [{ scale: withSpring(scale) }],
       opacity: withSpring(opacity),
-    };
-  });
+    }
+  })
 
   const paginationStyle2 = useAnimatedStyle(() => {
-    const inputRange = [screenWidth, 2 * screenWidth, 3 * screenWidth];
-    const scale = interpolate(
-      scrollX.value,
-      inputRange,
-      [0.8, 1.2, 0.8],
-      "clamp"
-    );
-    const opacity = interpolate(
-      scrollX.value,
-      inputRange,
-      [0.4, 1, 0.4],
-      "clamp"
-    );
+    const inputRange = [screenWidth, 2 * screenWidth, 3 * screenWidth]
+    const scale = interpolate(scrollX.value, inputRange, [0.8, 1.2, 0.8], "clamp")
+    const opacity = interpolate(scrollX.value, inputRange, [0.4, 1, 0.4], "clamp")
     return {
       transform: [{ scale: withSpring(scale) }],
       opacity: withSpring(opacity),
-    };
-  });
+    }
+  })
 
   const paginationStyle3 = useAnimatedStyle(() => {
-    const inputRange = [2 * screenWidth, 3 * screenWidth, 4 * screenWidth];
-    const scale = interpolate(
-      scrollX.value,
-      inputRange,
-      [0.8, 1.2, 0.8],
-      "clamp"
-    );
-    const opacity = interpolate(
-      scrollX.value,
-      inputRange,
-      [0.4, 1, 0.4],
-      "clamp"
-    );
+    const inputRange = [2 * screenWidth, 3 * screenWidth, 4 * screenWidth]
+    const scale = interpolate(scrollX.value, inputRange, [0.8, 1.2, 0.8], "clamp")
+    const opacity = interpolate(scrollX.value, inputRange, [0.4, 1, 0.4], "clamp")
     return {
       transform: [{ scale: withSpring(scale) }],
       opacity: withSpring(opacity),
-    };
-  });
+    }
+  })
 
-  const paginationStyles = [
-    paginationStyle0,
-    paginationStyle1,
-    paginationStyle2,
-    paginationStyle3,
-  ];
+  const paginationStyles = [paginationStyle0, paginationStyle1, paginationStyle2, paginationStyle3]
 
   const handleNext = () => {
     if (currentIndex < onboardingData.length - 1) {
-      const nextIndex = currentIndex + 1;
-      setCurrentIndex(nextIndex);
+      const nextIndex = currentIndex + 1
+      setCurrentIndex(nextIndex)
       scrollViewRef.current?.scrollTo({
         x: nextIndex * screenWidth,
         animated: true,
-      });
+      })
     } else {
-      setOnboardingCompleted();
+      setOnboardingCompleted()
     }
-  };
+  }
 
   const handleSkip = () => {
-    setOnboardingCompleted();
-  };
+    setOnboardingCompleted()
+  }
 
   const handleScroll = (event: any) => {
-    const offsetX = event.nativeEvent.contentOffset.x;
-    scrollX.value = offsetX;
-    const index = Math.round(offsetX / screenWidth);
-    setCurrentIndex(index);
-  };
+    const offsetX = event.nativeEvent.contentOffset.x
+    scrollX.value = offsetX
+    const index = Math.round(offsetX / screenWidth)
+    setCurrentIndex(index)
+  }
 
   const renderSlide = (item: OnboardingSlide, index: number) => (
     <View key={item.id} style={styles.slide}>
@@ -198,7 +147,7 @@ export const OnboardingScreen: React.FC = () => {
         </Text>
       </View>
     </View>
-  );
+  )
 
   const renderPagination = () => (
     <View style={styles.pagination}>
@@ -209,16 +158,13 @@ export const OnboardingScreen: React.FC = () => {
             styles.paginationDot,
             paginationStyles[index],
             {
-              backgroundColor:
-                index === currentIndex
-                  ? theme.colors.primary
-                  : theme.colors.outline,
+              backgroundColor: index === currentIndex ? theme.colors.primary : theme.colors.outline,
             },
           ]}
         />
       ))}
     </View>
-  );
+  )
 
   return (
     <View style={styles.container}>
@@ -242,29 +188,19 @@ export const OnboardingScreen: React.FC = () => {
             <Button mode="text" onPress={handleSkip} style={styles.skipButton}>
               এড়িয়ে যান
             </Button>
-            <Button
-              mode="contained"
-              onPress={handleNext}
-              style={styles.nextButton}
-              icon="arrow-right"
-            >
+            <Button mode="contained" onPress={handleNext} style={styles.nextButton} icon="arrow-right">
               পরবর্তী
             </Button>
           </View>
         ) : (
-          <Button
-            mode="contained"
-            onPress={handleNext}
-            style={styles.getStartedButton}
-            icon="rocket-launch"
-          >
+          <Button mode="contained" onPress={handleNext} style={styles.getStartedButton} icon="rocket-launch">
             শুরু করুন
           </Button>
         )}
       </View>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -344,4 +280,4 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingVertical: spacing.sm,
   },
-});
+})
