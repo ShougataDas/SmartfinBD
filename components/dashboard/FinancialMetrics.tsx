@@ -146,12 +146,12 @@ export const FinancialMetrics: React.FC<FinancialMetricsProps> = ({
       icon: "piggy-bank",
       color: "#2196F3",
       trend: savingsRate >= 20 ? "up" : savingsRate >= 10 ? "neutral" : "down",
-      trendValue: `${savingsRate.toFixed(1)}%`,
+      trendValue: `${savingsRate?.toFixed(1)}%`,
     },
     {
       title: "জরুরি তহবিল",
       value: formatCurrency(currentSavings),
-      subtitle: `${emergencyFundMonths.toFixed(1)} মাসের খরচ`,
+      subtitle: `${emergencyFundMonths?.toFixed(1)} মাসের খরচ`,
       icon: "shield-check",
       color: "#FF9800",
       trend:
@@ -160,11 +160,11 @@ export const FinancialMetrics: React.FC<FinancialMetricsProps> = ({
           : emergencyFundMonths >= 3
           ? "neutral"
           : "down",
-      trendValue: `${emergencyFundMonths.toFixed(1)}M`,
+      trendValue: `${emergencyFundMonths?.toFixed(1)}M`,
     },
     {
       title: "প্রত্যাশিত রিটার্ন",
-      value: `${weightedReturn.toFixed(1)}%`,
+      value: `${weightedReturn?.toFixed(1)}%`,
       subtitle: "বার্ষিক গড় রিটার্ন",
       icon: "chart-line",
       color: "#9C27B0",
@@ -174,7 +174,7 @@ export const FinancialMetrics: React.FC<FinancialMetricsProps> = ({
     },
     {
       title: "পোর্টফোলিও বৈচিত্র্য",
-      value: `${diversityScore.toFixed(0)}%`,
+      value: `${diversityScore?.toFixed(0)}%`,
       subtitle: `${uniqueTypes?.size} ধরনের বিনিয়োগ`,
       icon: "chart-donut",
       color: "#607D8B",
