@@ -189,6 +189,7 @@ export const useAuthStore = create<AuthStore>()(
         try {
           const result = await BiometricService.loginWithBiometrics();
 
+          console.log("result.credentials", result);
           if (result.success && result.credentials) {
             // Use stored credentials to login
             await get().login({

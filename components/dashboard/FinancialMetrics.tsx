@@ -111,10 +111,11 @@ export const FinancialMetrics: React.FC<FinancialMetricsProps> = ({
     monthlyExpenses > 0 ? currentSavings / monthlyExpenses : 0;
 
   // Calculate weighted average return
-  const weightedReturn = portfolio?.investments.reduce((sum, inv) => {
-    const weight = inv.investAmount / totalInvestment;
-    return sum + (inv.expectedReturn || 0) * weight;
-  }, 0);
+  const weightedReturn =
+    portfolio?.investments.reduce((sum, inv) => {
+      const weight = inv.investAmount / totalInvestment;
+      return sum + ((inv.expectedReturn || 0) * weight) / 100;
+    }, 0) || 0;
   // Calculate portfolio diversity (number of different investment types)
   const uniqueTypes = new Set(portfolio?.investments.map((inv) => inv.type));
   const diversityScore = (uniqueTypes?.size / 6) * 100; // 6 is max investment types

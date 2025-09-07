@@ -14,7 +14,11 @@ interface ChatState {
 
 interface ChatActions {
   addMessage: (message: Omit<ChatMessage, "id" | "timestamp">) => void;
-  sendMessage: (text: string, user?: User, financialProfile?: FinancialProfile) => Promise<void>;
+  sendMessage: (
+    text: string,
+    user?: User,
+    financialProfile?: FinancialProfile
+  ) => Promise<void>;
   clearMessages: () => void;
   setTyping: (isTyping: boolean) => void;
   setLoading: (isLoading: boolean) => void;
@@ -48,12 +52,16 @@ export const useChatStore = create<ChatStore>()(
         }));
       },
 
-      sendMessage: async (text: string, user?: User, financialProfile?: FinancialProfile) => {
+      sendMessage: async (
+        text: string,
+        user?: User,
+        financialProfile?: FinancialProfile
+      ) => {
         const { addMessage, setTyping, setLoading } = get();
 
         // Add user message
         addMessage({
-          userId: user?.id || "current_user",
+          userId: user?._id || "current_user",
           text,
           content: text,
           isUser: true,
@@ -99,7 +107,8 @@ export const useChatStore = create<ChatStore>()(
           addMessage({
             userId: "ai_assistant",
             text: "দুঃখিত, আমি এই মুহূর্তে আপনার প্রশ্নের উত্তর দিতে পারছি না। অনুগ্রহ করে পরে আবার চেষ্টা করুন। 🙏",
-            content: "দুঃখিত, আমি এই মুহূর্তে আপনার প্রশ্নের উত্তর দিতে পারছি না। অনুগ্রহ করে পরে আবার চেষ্টা করুন। 🙏",
+            content:
+              "দুঃখিত, আমি এই মুহূর্তে আপনার প্রশ্নের উত্তর দিতে পারছি না। অনুগ্রহ করে পরে আবার চেষ্টা করুন। 🙏",
             isUser: false,
             type: MessageType.Text,
           });

@@ -3,13 +3,15 @@ import { ScrollView, View, StyleSheet, Alert } from "react-native";
 import {
   Card,
   Title,
-  Paragraph,
   Button,
   List,
   Surface,
   Text,
   Divider,
   Switch,
+  Portal,
+  Dialog,
+  TextInput,
 } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
@@ -24,9 +26,20 @@ import { BiometricService } from "@/services/biometricService";
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation();
   const { user, updateUser } = useUserStore();
-  const { logout, biometricEnabled, biometricAvailable, enableBiometricAuth, disableBiometricAuth, checkBiometricStatus } = useAuthStore();
+  const {
+    logout,
+    biometricEnabled,
+    biometricAvailable,
+    enableBiometricAuth,
+    disableBiometricAuth,
+    checkBiometricStatus,
+  } = useAuthStore();
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [biometricTypes, setBiometricTypes] = React.useState<string[]>([]);
+  const [passwordDialogVisible, setPasswordDialogVisible] =
+    React.useState(false);
+  const [password, setPassword] = React.useState("");
+  const [passwordError, setPasswordError] = React.useState("");
 
   React.useEffect(() => {
     checkBiometricStatus();
@@ -36,23 +49,59 @@ const ProfileScreen: React.FC = () => {
   const handleBiometricToggle = async (enabled: boolean) => {
     if (enabled) {
       if (!user?.email) {
-        Alert.alert('ত্রুটি', 'ব্যবহারকারীর ইমেইল পাওয়া যায়নি।');
+        Alert.alert("ত্রুটি", "ব্যবহারকারীর ইমেইল পাওয়া যায়নি।");
         return;
       }
-      
-      // For demo purposes, we'll use a default password
-      // In a real app, you'd need to ask for the current password
-      await enableBiometricAuth(user.email, 'demo123');
+
+      // Show password confirmation dialog
+      setPassword("");
+      setPasswordError("");
+      setPasswordDialogVisible(true);
     } else {
       Alert.alert(
-        'বায়োমেট্রিক লগইন বন্ধ করুন',
-        'আপনি কি বায়োমেট্রিক লগইন বন্ধ করতে চান?',
+        "বায়োমেট্রিক লগইন বন্ধ করুন",
+        "আপনি কি বায়োমেট্রিক লগইন বন্ধ করতে চান?",
         [
-          { text: 'বাতিল', style: 'cancel' },
-          { text: 'বন্ধ করুন', onPress: () => disableBiometricAuth() },
+          { text: "বাতিল", style: "cancel" },
+          { text: "বন্ধ করুন", onPress: () => disableBiometricAuth() },
         ]
       );
     }
+  };
+
+  const handlePasswordConfirm = async () => {
+    if (!password.trim()) {
+      setPasswordError("পাসওয়ার্ড দিন।");
+      return;
+    }
+
+    if (!user?.email) {
+      Alert.alert("ত্রুটি", "ব্যবহারকারীর ইমেইল পাওয়া যায়নি।");
+      return;
+    }
+
+    try {
+      // Test login with provided credentials
+      const testAuth = useAuthStore.getState();
+      await testAuth.login({ email: user.email, password });
+
+      // If login successful, enable biometric auth
+      await enableBiometricAuth(user.email, password);
+
+      setPasswordDialogVisible(false);
+      setPassword("");
+      setPasswordError("");
+    } catch (error) {
+      setPasswordError(
+        "আপনার পাসওয়ার্ড সঠিক নয়। অনুগ্রহ করে আবার চেষ্টা করুন।"
+      );
+    }
+  };
+
+  const handlePasswordCancel = () => {
+    setPasswordDialogVisible(false);
+    setPassword("");
+    setPasswordError("");
   };
 
   const handleLogout = () => {
@@ -75,19 +124,15 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleInvestmentGoals = () => {
-    Alert.alert(
-      "বিনিয়োগ লক্ষ্য",
-      "এই ফিচারটি শীঘ্রই আসছে।",
-      [{ text: "ঠিক আছে" }]
-    );
+    Alert.alert("বিনিয়োগ লক্ষ্য", "এই ফিচারটি শীঘ্রই আসছে।", [
+      { text: "ঠিক আছে" },
+    ]);
   };
 
   const handleReportsAnalytics = () => {
-    Alert.alert(
-      "রিপোর্ট ও বিশ্লেষণ",
-      "এই ফিচারটি শীঘ্রই আসছে।",
-      [{ text: "ঠিক আছে" }]
-    );
+    Alert.alert("রিপোর্ট ও বিশ্লেষণ", "এই ফিচারটি শীঘ্রই আসছে।", [
+      { text: "ঠিক আছে" },
+    ]);
   };
 
   const handleSecurity = () => {
@@ -99,8 +144,11 @@ const ProfileScreen: React.FC = () => {
       "সাহায্য ও সহায়তা",
       "যোগাযোগ করুন:\n\nইমেইল: support@smartfinbd.com\nফোন: +880 1XXX-XXXXXX\n\nঅথবা আমাদের AI চ্যাটবট ব্যবহার করুন।",
       [
-        { text: "চ্যাটবট", onPress: () => navigation.navigate("Chat" as never) },
-        { text: "ঠিক আছে" }
+        {
+          text: "চ্যাটবট",
+          onPress: () => navigation.navigate("Chat" as never),
+        },
+        { text: "ঠিক আছে" },
       ]
     );
   };
@@ -165,273 +213,340 @@ const ProfileScreen: React.FC = () => {
   ];
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Profile Header */}
-      <Surface style={styles.profileHeader} elevation={2}>
-        <View style={styles.profileInfo}>
-          <ProfilePictureSelector
-            currentImageUri={user?.profilePicture}
-            userName={user?.name || 'User'}
-            onImageSelected={() => { }}
-            onImageRemoved={() => { }}
-            size={80}
-            editable={false}
-          />
-          <View style={styles.userInfo}>
-            <Title style={styles.userName}>{user?.name || "ব্যবহারকারী"}</Title>
-            <Text variant="bodyMedium" style={styles.userEmail}>
-              {user?.email || "user@example.com"}
-            </Text>
-            <Text variant="bodySmall" style={styles.userPhone}>
-              {user?.phone || "+880 1XXX-XXXXXX"}
-            </Text>
+    <>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Profile Header */}
+        <Surface style={styles.profileHeader} elevation={2}>
+          <View style={styles.profileInfo}>
+            <ProfilePictureSelector
+              currentImageUri={user?.profilePicture}
+              userName={user?.name || "User"}
+              onImageSelected={() => {}}
+              onImageRemoved={() => {}}
+              size={80}
+              editable={false}
+            />
+            <View style={styles.userInfo}>
+              <Title style={styles.userName}>
+                {user?.name || "ব্যবহারকারী"}
+              </Title>
+              <Text variant="bodyMedium" style={styles.userEmail}>
+                {user?.email || "user@example.com"}
+              </Text>
+              <Text variant="bodySmall" style={styles.userPhone}>
+                {user?.phone || "+880 1XXX-XXXXXX"}
+              </Text>
+            </View>
           </View>
-        </View>
-        <Button
-          mode="outlined"
-          onPress={handleEditProfile}
-          style={styles.editButton}
-          icon="pencil"
-        >
-          সম্পাদনা
-        </Button>
-      </Surface>
+          <Button
+            mode="outlined"
+            onPress={handleEditProfile}
+            style={styles.editButton}
+            icon="pencil"
+          >
+            সম্পাদনা
+          </Button>
+        </Surface>
 
-      {/* Profile Stats */}
-      <View style={styles.statsContainer}>
-        {profileStats.map((stat, index) => (
-          <Card key={index} style={styles.statCard}>
-            <Card.Content style={styles.statContent}>
-              <Icon name={stat.icon} size={24} color={stat.color} />
-              <Text variant="bodySmall" style={styles.statTitle}>
-                {stat.title}
-              </Text>
-              <Text variant="titleMedium" style={styles.statValue}>
-                {stat.value}
-              </Text>
-            </Card.Content>
-          </Card>
-        ))}
-      </View>
-
-      {/* Quick Actions */}
-      <Card style={styles.quickActionsCard}>
-        <Card.Content>
-          <Title style={styles.sectionTitle}>দ্রুত কার্যক্রম</Title>
-          <View style={styles.quickActionsGrid}>
-            <Surface
-              style={styles.quickActionItem}
-              onTouchEnd={handleFinancialProfile}
-            >
-              <Icon name="account-edit" size={32} color={theme.colors.primary} />
-              <Text variant="bodyMedium" style={styles.quickActionText}>
-                প্রোফাইল আপডেট
-              </Text>
-            </Surface>
-
-            <Surface
-              style={styles.quickActionItem}
-              onTouchEnd={handleRiskAssessment}
-            >
-              <Icon name="scale-balance" size={32} color={theme.colors.secondary} />
-              <Text variant="bodyMedium" style={styles.quickActionText}>
-                ঝুঁকি মূল্যায়ন
-              </Text>
-            </Surface>
-
-            <Surface
-              style={styles.quickActionItem}
-              onTouchEnd={() => navigation.navigate("Chat" as never)}
-            >
-              <Icon name="robot" size={32} color={theme.colors.tertiary} />
-              <Text variant="bodyMedium" style={styles.quickActionText}>
-                AI সহায়তা
-              </Text>
-            </Surface>
-
-            <Surface
-              style={styles.quickActionItem}
-              onTouchEnd={handleHelpSupport}
-            >
-              <Icon name="help-circle" size={32} color={theme.colors.outline} />
-              <Text variant="bodyMedium" style={styles.quickActionText}>
-                সাহায্য
-              </Text>
-            </Surface>
-          </View>
-        </Card.Content>
-      </Card>
-      {/* Menu Items */}
-      <Card style={styles.menuCard}>
-        <Card.Content>
-          <Title style={styles.sectionTitle}>অ্যাকাউন্ট সেটিংস</Title>
-          {menuItems.map((item, index) => (
-            <React.Fragment key={index}>
-              <List.Item
-                title={item.title}
-                description={item.description}
-                left={(props) => (
-                  <List.Icon
-                    {...props}
-                    icon={item.icon}
-                    color={theme.colors.primary}
-                  />
-                )}
-                right={(props) => <List.Icon {...props} icon="chevron-right" />}
-                onPress={item.onPress}
-                style={styles.menuItem}
-              />
-              {index < menuItems.length - 1 && <Divider />}
-            </React.Fragment>
+        {/* Profile Stats
+        <View style={styles.statsContainer}>
+          {profileStats.map((stat, index) => (
+            <Card key={index} style={styles.statCard}>
+              <Card.Content style={styles.statContent}>
+                <Icon name={stat.icon} size={24} color={stat.color} />
+                <Text variant="bodySmall" style={styles.statTitle}>
+                  {stat.title}
+                </Text>
+                <Text variant="titleMedium" style={styles.statValue}>
+                  {stat.value}
+                </Text>
+              </Card.Content>
+            </Card>
           ))}
-        </Card.Content>
-      </Card>
+        </View> */}
 
-      {/* App Settings */}
-      <Card style={styles.menuCard}>
-        <Card.Content>
-          <Title style={styles.sectionTitle}>অ্যাপ সেটিংস</Title>
+        {/* Quick Actions */}
+        <Card style={styles.quickActionsCard}>
+          <Card.Content>
+            <Title style={styles.sectionTitle}>দ্রুত কার্যক্রম</Title>
+            <View style={styles.quickActionsGrid}>
+              <Surface
+                style={styles.quickActionItem}
+                onTouchEnd={handleFinancialProfile}
+              >
+                <Icon
+                  name="account-edit"
+                  size={32}
+                  color={theme.colors.primary}
+                />
+                <Text variant="bodyMedium" style={styles.quickActionText}>
+                  প্রোফাইল আপডেট
+                </Text>
+              </Surface>
 
-          <List.Item
-            title="নোটিফিকেশন"
-            description="পুশ নোটিফিকেশন চালু/বন্ধ করুন"
-            left={(props) => (
-              <List.Icon {...props} icon="bell" color={theme.colors.primary} />
-            )}
-            right={() => (
-              <Switch
-                value={notificationsEnabled}
-                onValueChange={setNotificationsEnabled}
-              />
-            )}
-            style={styles.menuItem}
-          />
+              <Surface
+                style={styles.quickActionItem}
+                onTouchEnd={handleRiskAssessment}
+              >
+                <Icon
+                  name="scale-balance"
+                  size={32}
+                  color={theme.colors.secondary}
+                />
+                <Text variant="bodyMedium" style={styles.quickActionText}>
+                  ঝুঁকি মূল্যায়ন
+                </Text>
+              </Surface>
 
-          <Divider />
+              <Surface
+                style={styles.quickActionItem}
+                onTouchEnd={() => navigation.navigate("Chat" as never)}
+              >
+                <Icon name="robot" size={32} color={theme.colors.tertiary} />
+                <Text variant="bodyMedium" style={styles.quickActionText}>
+                  AI সহায়তা
+                </Text>
+              </Surface>
 
-          {biometricAvailable && (
+              <Surface
+                style={styles.quickActionItem}
+                onTouchEnd={handleHelpSupport}
+              >
+                <Icon
+                  name="help-circle"
+                  size={32}
+                  color={theme.colors.outline}
+                />
+                <Text variant="bodyMedium" style={styles.quickActionText}>
+                  সাহায্য
+                </Text>
+              </Surface>
+            </View>
+          </Card.Content>
+        </Card>
+        {/* Menu Items */}
+        <Card style={styles.menuCard}>
+          <Card.Content>
+            <Title style={styles.sectionTitle}>অ্যাকাউন্ট সেটিংস</Title>
+            {menuItems.map((item, index) => (
+              <React.Fragment key={index}>
+                <List.Item
+                  title={item.title}
+                  description={item.description}
+                  left={(props) => (
+                    <List.Icon
+                      {...props}
+                      icon={item.icon}
+                      color={theme.colors.primary}
+                    />
+                  )}
+                  right={(props) => (
+                    <List.Icon {...props} icon="chevron-right" />
+                  )}
+                  onPress={item.onPress}
+                  style={styles.menuItem}
+                />
+                {index < menuItems.length - 1 && <Divider />}
+              </React.Fragment>
+            ))}
+          </Card.Content>
+        </Card>
+
+        {/* App Settings */}
+        <Card style={styles.menuCard}>
+          <Card.Content>
+            <Title style={styles.sectionTitle}>অ্যাপ সেটিংস</Title>
+
             <List.Item
-              title="বায়োমেট্রিক লগইন"
-              description={`${biometricTypes.join('/')} দিয়ে লগইন`}
+              title="নোটিফিকেশন"
+              description="পুশ নোটিফিকেশন চালু/বন্ধ করুন"
               left={(props) => (
                 <List.Icon
                   {...props}
-                  icon="fingerprint"
+                  icon="bell"
                   color={theme.colors.primary}
                 />
               )}
               right={() => (
                 <Switch
-                  value={biometricEnabled}
-                  onValueChange={handleBiometricToggle}
+                  value={notificationsEnabled}
+                  onValueChange={setNotificationsEnabled}
                 />
               )}
               style={styles.menuItem}
             />
-          )}
 
-          {biometricAvailable && <Divider />}
+            <Divider />
 
-          <List.Item
-            title="ভাষা"
-            description="বাংলা"
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon="translate"
-                color={theme.colors.primary}
+            {biometricAvailable && (
+              <List.Item
+                title="বায়োমেট্রিক লগইন"
+                description={`${biometricTypes.join("/")} দিয়ে লগইন`}
+                left={(props) => (
+                  <List.Icon
+                    {...props}
+                    icon="fingerprint"
+                    color={theme.colors.primary}
+                  />
+                )}
+                right={() => (
+                  <Switch
+                    value={biometricEnabled}
+                    onValueChange={handleBiometricToggle}
+                  />
+                )}
+                style={styles.menuItem}
               />
             )}
-            right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => Alert.alert("ভাষা", "এই ফিচারটি শীঘ্রই আসছে।", [{ text: "ঠিক আছে" }])}
-            style={styles.menuItem}
-          />
-        </Card.Content>
-      </Card>
 
-      {/* About & Legal */}
-      <Card style={styles.menuCard}>
-        <Card.Content>
-          <Title style={styles.sectionTitle}>সম্পর্কে</Title>
+            {biometricAvailable && <Divider />}
 
-          <List.Item
-            title="অ্যাপ সম্পর্কে"
-            description="SmartFin BD v1.0.0"
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon="information"
-                color={theme.colors.primary}
-              />
-            )}
-            right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => Alert.alert(
-              "SmartFin BD",
-              "সংস্করণ: 1.0.0\n\nবাংলাদেশের প্রথম AI চালিত ব্যক্তিগত আর্থিক পরামর্শদাতা অ্যাপ।\n\nডেভেলপার: SmartFin BD Team\nইমেইল: info@smartfinbd.com",
-              [{ text: "ঠিক আছে" }]
-            )}
-            style={styles.menuItem}
-          />
+            <List.Item
+              title="ভাষা"
+              description="বাংলা"
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="translate"
+                  color={theme.colors.primary}
+                />
+              )}
+              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              onPress={() =>
+                Alert.alert("ভাষা", "এই ফিচারটি শীঘ্রই আসছে।", [
+                  { text: "ঠিক আছে" },
+                ])
+              }
+              style={styles.menuItem}
+            />
+          </Card.Content>
+        </Card>
 
-          <Divider />
+        {/* About & Legal */}
+        <Card style={styles.menuCard}>
+          <Card.Content>
+            <Title style={styles.sectionTitle}>সম্পর্কে</Title>
 
-          <List.Item
-            title="গোপনীয়তা নীতি"
-            description="আমাদের গোপনীয়তা নীতি পড়ুন"
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon="shield-check"
-                color={theme.colors.primary}
-              />
-            )}
-            right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => Alert.alert(
-              "গোপনীয়তা নীতি",
-              "আমরা আপনার ব্যক্তিগত তথ্যের নিরাপত্তা ও গোপনীয়তা রক্ষায় প্রতিশ্রুতিবদ্ধ।\n\nবিস্তারিত জানতে আমাদের ওয়েবসাইট দেখুন।",
-              [{ text: "ঠিক আছে" }]
-            )}
-            style={styles.menuItem}
-          />
+            <List.Item
+              title="অ্যাপ সম্পর্কে"
+              description="SmartFin BD v1.0.0"
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="information"
+                  color={theme.colors.primary}
+                />
+              )}
+              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              onPress={() =>
+                Alert.alert(
+                  "SmartFin BD",
+                  "সংস্করণ: 1.0.0\n\nবাংলাদেশের প্রথম AI চালিত ব্যক্তিগত আর্থিক পরামর্শদাতা অ্যাপ।\n\nডেভেলপার: SmartFin BD Team\nইমেইল: info@smartfinbd.com",
+                  [{ text: "ঠিক আছে" }]
+                )
+              }
+              style={styles.menuItem}
+            />
 
-          <Divider />
+            <Divider />
 
-          <List.Item
-            title="ব্যবহারের শর্তাবলী"
-            description="সেবার শর্তাবলী দেখুন"
-            left={(props) => (
-              <List.Icon
-                {...props}
-                icon="file-document"
-                color={theme.colors.primary}
-              />
-            )}
-            right={(props) => <List.Icon {...props} icon="chevron-right" />}
-            onPress={() => Alert.alert(
-              "ব্যবহারের শর্তাবলী",
-              "SmartFin BD ব্যবহার করে আপনি আমাদের সেবার শর্তাবলী মেনে নিতে সম্মত হচ্ছেন।\n\nবিস্তারিত জানতে আমাদের ওয়েবসাইট দেখুন।",
-              [{ text: "ঠিক আছে" }]
-            )}
-            style={styles.menuItem}
-          />
-        </Card.Content>
-      </Card>
+            <List.Item
+              title="গোপনীয়তা নীতি"
+              description="আমাদের গোপনীয়তা নীতি পড়ুন"
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="shield-check"
+                  color={theme.colors.primary}
+                />
+              )}
+              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              onPress={() =>
+                Alert.alert(
+                  "গোপনীয়তা নীতি",
+                  "আমরা আপনার ব্যক্তিগত তথ্যের নিরাপত্তা ও গোপনীয়তা রক্ষায় প্রতিশ্রুতিবদ্ধ।\n\nবিস্তারিত জানতে আমাদের ওয়েবসাইট দেখুন।",
+                  [{ text: "ঠিক আছে" }]
+                )
+              }
+              style={styles.menuItem}
+            />
 
-      {/* Logout Button */}
-      <Card style={[styles.menuCard, styles.lastCard]}>
-        <Card.Content>
-          <Button
-            mode="contained"
-            onPress={handleLogout}
-            style={styles.logoutButton}
-            buttonColor={theme.colors.error}
-            icon="logout"
-          >
-            লগ আউট
-          </Button>
-        </Card.Content>
-      </Card>
-    </ScrollView>
+            <Divider />
+
+            <List.Item
+              title="ব্যবহারের শর্তাবলী"
+              description="সেবার শর্তাবলী দেখুন"
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="file-document"
+                  color={theme.colors.primary}
+                />
+              )}
+              right={(props) => <List.Icon {...props} icon="chevron-right" />}
+              onPress={() =>
+                Alert.alert(
+                  "ব্যবহারের শর্তাবলী",
+                  "SmartFin BD ব্যবহার করে আপনি আমাদের সেবার শর্তাবলী মেনে নিতে সম্মত হচ্ছেন।\n\nবিস্তারিত জানতে আমাদের ওয়েবসাইট দেখুন।",
+                  [{ text: "ঠিক আছে" }]
+                )
+              }
+              style={styles.menuItem}
+            />
+          </Card.Content>
+        </Card>
+
+        {/* Logout Button */}
+        <Card style={[styles.menuCard, styles.lastCard]}>
+          <Card.Content>
+            <Button
+              mode="contained"
+              onPress={handleLogout}
+              style={styles.logoutButton}
+              buttonColor={theme.colors.error}
+              icon="logout"
+            >
+              লগ আউট
+            </Button>
+          </Card.Content>
+        </Card>
+      </ScrollView>
+
+      {/* Password Confirmation Dialog */}
+      <Portal theme={{ roundness: 1 }}>
+        <Dialog
+          visible={passwordDialogVisible}
+          onDismiss={handlePasswordCancel}
+        >
+          <Dialog.Title>পাসওয়ার্ড নিশ্চিত করুন</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium" style={{ marginBottom: spacing.md }}>
+              বায়োমেট্রিক লগইন সক্রিয় করতে আপনার বর্তমান পাসওয়ার্ড দিন।
+            </Text>
+            <TextInput
+              label="পাসওয়ার্ড"
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (passwordError) setPasswordError("");
+              }}
+              secureTextEntry
+              error={!!passwordError}
+              style={{ marginBottom: spacing.sm }}
+            />
+            {passwordError ? (
+              <Text variant="bodySmall" style={{ color: theme.colors.error }}>
+                {passwordError}
+              </Text>
+            ) : null}
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={handlePasswordCancel}>বাতিল</Button>
+            <Button onPress={handlePasswordConfirm}>নিশ্চিত করুন</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    </>
   );
 };
 

@@ -1,31 +1,15 @@
-import { ChatMessage, ChatResponse, User, FinancialProfile, MessageType } from "@/types";
+import { ChatMessage, ChatResponse, User, FinancialProfile } from "@/types";
+import { API_CONFIG, getApiUrl } from "@/constants/config";
+import { useAuthStore } from "@/store/authStore";
 
 /**
  * AI Chat Service
  * Handles communication with OpenAI API for financial advice and support
  */
 
-interface OpenAIMessage {
-  role: "system" | "user" | "assistant";
-  content: string;
-}
-
-interface OpenAIResponse {
-  choices: Array<{
-    message: {
-      content: string;
-      role: string;
-    };
-  }>;
-  usage?: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-}
-
 export class ChatService {
-  private static readonly API_URL = "https://api.openai.com/v1/chat/completions";
+  private static readonly API_URL =
+    "https://api.openai.com/v1/chat/completions";
   private static readonly MODEL = "gpt-3.5-turbo";
   private static readonly MAX_TOKENS = 1000;
   private static readonly API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
@@ -49,7 +33,7 @@ User Profile:
 - Dependents: ${financialProfile.dependents}
 - Employment: ${financialProfile.employmentType}
 - Income Stability: ${financialProfile.incomeStability}
-- Risk Tolerance: ${user.riskTolerance || 'Not assessed'}
+- Risk Tolerance: ${user.riskTolerance || "Not assessed"}
 `
         : "";
 
@@ -88,7 +72,7 @@ Always end responses with a helpful tip or encouragement about financial plannin
   }
 
   /**
-   * Send message to OpenAI API
+   * Send message to API
    */
   static async sendMessage(
     message: string,
@@ -97,78 +81,84 @@ Always end responses with a helpful tip or encouragement about financial plannin
     financialProfile?: FinancialProfile
   ): Promise<ChatResponse> {
     try {
-      // Check if API key is available
-      if (!this.API_KEY) {
-        console.warn('OpenAI API key not found, using fallback response');
-        return {
-          success: true,
-          message: this.getFallbackResponse(message),
-        };
+      // Get the last 10 messages for context
+      const recentMessages = conversationHistory.slice(-10);
+
+      // Get auth token
+      const token = useAuthStore.getState().token;
+
+      if (!token) {
+        throw new Error("Authentication token not found");
       }
 
-      // Prepare conversation history
-      const messages: OpenAIMessage[] = [
-        {
-          role: "system",
-          content: this.getSystemPrompt(user, financialProfile),
-        },
-      ];
+      // Group messages into question-answer pairs
+      const messagePairs: { question: string; answer: string }[] = [];
+      let currentQuestion = "";
+      let currentAnswer = "";
 
-      // Add conversation history (last 10 messages to stay within token limits)
-      const recentHistory = conversationHistory.slice(-10);
-      recentHistory.forEach((msg) => {
-        if (msg.userId === 'ai_assistant') {
-          messages.push({
-            role: "assistant",
-            content: msg.text || msg.content || "",
-          });
+      for (const msg of recentMessages) {
+        const isUserMessage = msg.isUser || msg.userId !== "ai_assistant";
+        const messageText = msg.text || msg.content || "";
+
+        if (isUserMessage) {
+          // If we have a previous question-answer pair, save it
+          if (currentQuestion && currentAnswer) {
+            messagePairs.push({
+              question: currentQuestion,
+              answer: currentAnswer,
+            });
+          }
+          // Start new question
+          currentQuestion = messageText;
+          currentAnswer = "";
         } else {
-          messages.push({
-            role: "user",
-            content: msg.text || msg.content || "",
-          });
+          // This is an AI response
+          currentAnswer = messageText;
         }
-      });
+      }
 
-      // Add current message
-      messages.push({
-        role: "user",
-        content: message,
-      });
+      // Add the last pair if it exists
+      if (currentQuestion && currentAnswer) {
+        messagePairs.push({
+          question: currentQuestion,
+          answer: currentAnswer,
+        });
+      }
 
-      const response = await fetch(this.API_URL, {
+      // Take only the last 5 pairs
+      const lastFivePairs = messagePairs.slice(-5);
+
+      // Prepare request body
+      const requestBody = {
+        question: message,
+        recentMessage: lastFivePairs,
+      };
+
+      const response = await fetch(getApiUrl(API_CONFIG.ENDPOINTS.CHAT.SEND), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${this.API_KEY}`,
+          Authorization: token,
         },
-        body: JSON.stringify({
-          model: this.MODEL,
-          messages,
-          max_tokens: this.MAX_TOKENS,
-          temperature: 0.7,
-          presence_penalty: 0.1,
-          frequency_penalty: 0.1,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        console.error(`OpenAI API error: ${response.status} ${response.statusText}`);
-        throw new Error(`OpenAI API error: ${response.status}`);
+        console.error(
+          `Chat API error: ${response.status} ${response.statusText}`
+        );
+        throw new Error(`Chat API error: ${response.status}`);
       }
 
-      const data: OpenAIResponse = await response.json();
+      const data = await response.json();
 
-      if (!data.choices || data.choices.length === 0) {
-        throw new Error("No response from OpenAI API");
+      if (!data.success) {
+        throw new Error(data.error || "Failed to get response from chat API");
       }
-
-      const assistantMessage = data.choices[0].message.content;
 
       return {
         success: true,
-        message: assistantMessage,
-        usage: data.usage,
+        message: data.data.answer,
       };
     } catch (error) {
       console.error("Chat service error:", error);
@@ -329,7 +319,12 @@ Feel free to ask any specific questions! 😊`;
     user?: User,
     financialProfile?: FinancialProfile
   ): Promise<ChatResponse> {
-    return this.sendMessage(message, conversationHistory, user, financialProfile);
+    return this.sendMessage(
+      message,
+      conversationHistory,
+      user,
+      financialProfile
+    );
   }
 
   /**
@@ -497,12 +492,8 @@ Feel free to ask any specific questions! 😊`;
    * Format message for better display
    */
   static formatMessage(message: string): string {
-    // Add line breaks for better readability
-    let formatted = message
-      .replace(/\n\n/g, "\n")
-      .replace(/([।!?])\s*([A-Za-z\u0980-\u09FF])/g, "$1\n\n$2")
-      .replace(/(\d+\.)\s*([A-Za-z\u0980-\u09FF])/g, "$1 $2")
-      .trim();
+    // Just handle escaped characters, let markdown library handle the rest
+    let formatted = message.replace(/\\\*/g, "*").replace(/\\\$/g, "$").trim();
 
     return formatted;
   }

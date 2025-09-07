@@ -10,9 +10,7 @@ import {
 } from "react-native";
 import {
   TextInput,
-  Button,
   Text,
-  Card,
   Surface,
   Chip,
   IconButton,
@@ -20,6 +18,7 @@ import {
 } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useFocusEffect } from "@react-navigation/native";
+import MarkdownDisplay from "react-native-markdown-display";
 
 import { theme, spacing } from "@/constants/theme";
 import { useUserStore } from "@/store/userStore";
@@ -28,7 +27,9 @@ import { ChatService } from "@/services/chatService";
 import { ChatMessage, MessageType } from "@/types";
 
 // Helper function to format time safely
-const formatMessageTime = (timestamp: Date | string | number | undefined): string => {
+const formatMessageTime = (
+  timestamp: Date | string | number | undefined
+): string => {
   try {
     let date: Date;
 
@@ -36,7 +37,7 @@ const formatMessageTime = (timestamp: Date | string | number | undefined): strin
       date = new Date();
     } else if (timestamp instanceof Date) {
       date = timestamp;
-    } else if (typeof timestamp === 'string' || typeof timestamp === 'number') {
+    } else if (typeof timestamp === "string" || typeof timestamp === "number") {
       date = new Date(timestamp);
     } else {
       date = new Date();
@@ -50,23 +51,30 @@ const formatMessageTime = (timestamp: Date | string | number | undefined): strin
     // Format time manually to avoid locale issues
     const hours = date.getHours();
     const minutes = date.getMinutes();
-    const formattedHours = hours.toString().padStart(2, '0');
-    const formattedMinutes = minutes.toString().padStart(2, '0');
+    const formattedHours = hours.toString().padStart(2, "0");
+    const formattedMinutes = minutes.toString().padStart(2, "0");
 
     return `${formattedHours}:${formattedMinutes}`;
   } catch (error) {
-    console.warn('Error formatting message time:', error);
+    console.warn("Error formatting message time:", error);
     const now = new Date();
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, "0");
+    const minutes = now.getMinutes().toString().padStart(2, "0");
     return `${hours}:${minutes}`;
   }
 };
 
 const ChatScreen: React.FC = () => {
   const { user, financialProfile } = useUserStore();
-  const { messages, isLoading, isTyping, sendMessage, addMessage, clearMessages, setLoading } =
-    useChatStore();
+  const {
+    messages,
+    isLoading,
+    isTyping,
+    sendMessage,
+    addMessage,
+    clearMessages,
+    setLoading,
+  } = useChatStore();
 
   const [inputText, setInputText] = useState("");
   const [language, setLanguage] = useState<"bn" | "en">("bn");
@@ -81,9 +89,9 @@ const ChatScreen: React.FC = () => {
   const quickReplies =
     messages.length > 0
       ? ChatService.getQuickReplies(
-        messages[messages.length - 1]?.text || "",
-        language
-      )
+          messages[messages.length - 1]?.text || "",
+          language
+        )
       : [];
 
   useFocusEffect(
@@ -197,17 +205,78 @@ const ChatScreen: React.FC = () => {
             </Text>
           </View>
         )}
-        <Text
-          variant="bodyMedium"
-          style={[
-            styles.messageText,
-            message.isUser
-              ? styles.userMessageText
-              : styles.assistantMessageText,
-          ]}
-        >
-          {message.text}
-        </Text>
+        {message.isUser ? (
+          <Text
+            variant="bodyMedium"
+            style={[styles.messageText, styles.userMessageText]}
+          >
+            {message.text}
+          </Text>
+        ) : (
+          <MarkdownDisplay
+            style={{
+              body: {
+                fontSize: 16,
+                color: theme.colors.onSurface,
+                lineHeight: 22,
+              },
+              heading1: {
+                fontSize: 20,
+                fontWeight: "bold",
+                color: theme.colors.onSurface,
+                marginBottom: 8,
+              },
+              heading2: {
+                fontSize: 18,
+                fontWeight: "bold",
+                color: theme.colors.onSurface,
+                marginBottom: 6,
+              },
+              heading3: {
+                fontSize: 16,
+                fontWeight: "bold",
+                color: theme.colors.onSurface,
+                marginBottom: 4,
+              },
+              strong: {
+                fontWeight: "bold",
+                color: theme.colors.onSurface,
+              },
+              em: {
+                fontStyle: "italic",
+                color: theme.colors.onSurface,
+              },
+              bullet_list: {
+                marginBottom: 8,
+              },
+              ordered_list: {
+                marginBottom: 8,
+              },
+              list_item: {
+                marginBottom: 4,
+              },
+              paragraph: {
+                marginBottom: 8,
+              },
+              code_inline: {
+                backgroundColor: theme.colors.surfaceVariant,
+                paddingHorizontal: 4,
+                paddingVertical: 2,
+                borderRadius: 4,
+                fontFamily: "monospace",
+              },
+              code_block: {
+                backgroundColor: theme.colors.surfaceVariant,
+                padding: 12,
+                borderRadius: 8,
+                marginBottom: 8,
+                fontFamily: "monospace",
+              },
+            }}
+          >
+            {message.text}
+          </MarkdownDisplay>
+        )}
         <Text
           variant="bodySmall"
           style={[
@@ -352,6 +421,7 @@ const ChatScreen: React.FC = () => {
             icon="send"
             size={24}
             mode="contained"
+            iconColor="red"
             onPress={() => handleSendMessage()}
             disabled={!inputText.trim() || isLoading || isTyping}
             style={styles.sendButton}
@@ -516,7 +586,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   sendButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: "#4CAF50",
   },
   inputHint: {
     color: theme.colors.onSurfaceVariant,
