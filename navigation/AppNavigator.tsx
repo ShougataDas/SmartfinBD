@@ -1,66 +1,66 @@
-import type React from "react"
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
-import { createStackNavigator } from "@react-navigation/stack"
-import Icon from "react-native-vector-icons/MaterialCommunityIcons"
+import type React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createStackNavigator } from "@react-navigation/stack";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
-import DashboardScreen from "@/screens/DashboardScreen"
-import InvestmentScreen from "@/screens/InvestmentScreen"
-import ChatScreen from "@/screens/ChatScreen"
-import ProfileScreen from "@/screens/ProfileScreen"
-import { OnboardingScreen } from "@/screens/OnboardingScreen"
-import { LoginScreen } from "@/screens/auth/LoginScreen"
-import { RegisterScreen } from "@/screens/auth/RegisterScreen"
-import { FinancialProfileScreen } from "@/screens/profile/FinancialProfileScreen"
-import { RiskAssessmentScreen } from "@/screens/profile/RiskAssessmentScreen"
-import { InvestmentDetailsScreen } from "@/screens/investment/InvestmentDetailsScreen"
-import { SanchayapatraDetailsScreen } from "@/screens/investment/SanchayapatraDetailsScreen"
-import { EditProfileScreen } from "@/screens/profile/EditProfileScreen"
-import { InvestmentFormScreen } from "@/screens/investment/InvestmentFormScreen"
-import SanchayapatraScreen from "@/screens/investment/SanchayapatraScreen"
-import DPSScreen from "@/screens/investment/DPSScreen"
-import FixedDepositScreen from "@/screens/investment/FixedDepositScreen"
-import StockMarketScreen from "@/screens/investment/StockMarketScreen"
-import MutualFundScreen from "@/screens/investment/MutualFundScreen"
-import { BiometricSettingsScreen } from "@/screens/security/BiometricSettingsScreen"
-import RecommendationsScreen from "@/screens/RecommendationsScreen"
-import type { InvestmentType } from "@/types"
-import { theme } from "@/constants/theme"
-import { useAuthStore } from "@/store/authStore"
+import DashboardScreen from "@/screens/DashboardScreen";
+import InvestmentScreen from "@/screens/InvestmentScreen";
+import ChatScreen from "@/screens/ChatScreen";
+import ProfileScreen from "@/screens/ProfileScreen";
+import { OnboardingScreen } from "@/screens/OnboardingScreen";
+import { LoginScreen } from "@/screens/auth/LoginScreen";
+import { RegisterScreen } from "@/screens/auth/RegisterScreen";
+import { FinancialProfileScreen } from "@/screens/profile/FinancialProfileScreen";
+import { RiskAssessmentScreen } from "@/screens/profile/RiskAssessmentScreen";
+import { InvestmentDetailsScreen } from "@/screens/investment/InvestmentDetailsScreen";
+// import { SanchayapatraDetailsScreen } from "@/screens/investment/SanchayapatraDetailsScreen"
+import { EditProfileScreen } from "@/screens/profile/EditProfileScreen";
+import { InvestmentFormScreen } from "@/screens/investment/InvestmentFormScreen";
+import SanchayapatraScreen from "@/screens/investment/SanchayapatraScreen";
+import DPSScreen from "@/screens/investment/DPSScreen";
+import FixedDepositScreen from "@/screens/investment/FixedDepositScreen";
+import StockMarketScreen from "@/screens/investment/StockMarketScreen";
+import MutualFundScreen from "@/screens/investment/MutualFundScreen";
+import { BiometricSettingsScreen } from "@/screens/security/BiometricSettingsScreen";
+import RecommendationsScreen from "@/screens/RecommendationsScreen";
+import type { InvestmentType } from "@/types";
+import { theme } from "@/constants/theme";
+import { useAuthStore } from "@/store/authStore";
 
 export type RootStackParamList = {
-  Onboarding: undefined
-  Auth: undefined
-  Main: undefined
-  FinancialProfile: undefined
-  RiskAssessment: undefined
-  EditProfile: undefined
-  BiometricSettings: undefined
-  Recommendations: undefined
-  InvestmentDetails: { investmentId: string }
-  SanchayapatraDetails: undefined
-  InvestmentForm: { investmentType: InvestmentType; investmentName: string }
-  SanchayapatraScreen: { investmentId: string }
-  DPSScreen: { investmentId: string }
-  FixedDepositScreen: { investmentId: string }
-  StockMarketScreen: { investmentId: string }
-  MutualFundScreen: { investmentId: string }
-}
+  Onboarding: undefined;
+  Auth: undefined;
+  Main: undefined;
+  FinancialProfile: undefined;
+  RiskAssessment: undefined;
+  EditProfile: undefined;
+  BiometricSettings: undefined;
+  Recommendations: undefined;
+  InvestmentDetails: { investmentId: string };
+  SanchayapatraDetails: undefined;
+  InvestmentForm: { investmentType: InvestmentType; investmentName: string };
+  SanchayapatraScreen: { investmentId: string };
+  DPSScreen: { investmentId: string };
+  FixedDepositScreen: { investmentId: string };
+  StockMarketScreen: { investmentId: string };
+  MutualFundScreen: { investmentId: string };
+};
 
 export type AuthStackParamList = {
-  Login: undefined
-  Register: undefined
-}
+  Login: undefined;
+  Register: undefined;
+};
 
 export type MainTabParamList = {
-  Dashboard: undefined
-  Investment: undefined
-  Chat: undefined
-  Profile: undefined
-}
+  Dashboard: undefined;
+  Investment: undefined;
+  Chat: undefined;
+  Profile: undefined;
+};
 
-const Stack = createStackNavigator<RootStackParamList>()
-const AuthStack = createStackNavigator<AuthStackParamList>()
-const Tab = createBottomTabNavigator<MainTabParamList>()
+const Stack = createStackNavigator<RootStackParamList>();
+const AuthStack = createStackNavigator<AuthStackParamList>();
+const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const AuthNavigator: React.FC = () => {
   return (
@@ -73,34 +73,34 @@ const AuthNavigator: React.FC = () => {
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Register" component={RegisterScreen} />
     </AuthStack.Navigator>
-  )
-}
+  );
+};
 
 const MainTabNavigator: React.FC = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: string
+          let iconName: string;
 
           switch (route.name) {
             case "Dashboard":
-              iconName = focused ? "view-dashboard" : "view-dashboard-outline"
-              break
+              iconName = focused ? "view-dashboard" : "view-dashboard-outline";
+              break;
             case "Investment":
-              iconName = focused ? "chart-line" : "chart-line-variant"
-              break
+              iconName = focused ? "chart-line" : "chart-line-variant";
+              break;
             case "Chat":
-              iconName = focused ? "chat" : "chat-outline"
-              break
+              iconName = focused ? "chat" : "chat-outline";
+              break;
             case "Profile":
-              iconName = focused ? "account" : "account-outline"
-              break
+              iconName = focused ? "account" : "account-outline";
+              break;
             default:
-              iconName = "circle"
+              iconName = "circle";
           }
 
-          return <Icon name={iconName} size={size} color={color} />
+          return <Icon name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.outline,
@@ -124,16 +124,32 @@ const MainTabNavigator: React.FC = () => {
         },
       })}
     >
-      <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: "ড্যাশবোর্ড" }} />
-      <Tab.Screen name="Investment" component={InvestmentScreen} options={{ title: "বিনিয়োগ" }} />
-      <Tab.Screen name="Chat" component={ChatScreen} options={{ title: "চ্যাট" }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: "প্রোফাইল" }} />
+      <Tab.Screen
+        name="Dashboard"
+        component={DashboardScreen}
+        options={{ title: "ড্যাশবোর্ড" }}
+      />
+      <Tab.Screen
+        name="Investment"
+        component={InvestmentScreen}
+        options={{ title: "বিনিয়োগ" }}
+      />
+      <Tab.Screen
+        name="Chat"
+        component={ChatScreen}
+        options={{ title: "চ্যাট" }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ title: "প্রোফাইল" }}
+      />
     </Tab.Navigator>
-  )
-}
+  );
+};
 
 export const AppNavigator: React.FC = () => {
-  const { isAuthenticated, hasCompletedOnboarding } = useAuthStore()
+  const { isAuthenticated, hasCompletedOnboarding } = useAuthStore();
 
   return (
     <Stack.Navigator
@@ -209,7 +225,7 @@ export const AppNavigator: React.FC = () => {
               headerTintColor: theme.colors.onPrimary,
             }}
           />
-          <Stack.Screen
+          {/* <Stack.Screen
             name="SanchayapatraDetails"
             component={SanchayapatraDetailsScreen}
             options={{
@@ -218,7 +234,7 @@ export const AppNavigator: React.FC = () => {
               headerStyle: { backgroundColor: theme.colors.primary },
               headerTintColor: theme.colors.onPrimary,
             }}
-          />
+          /> */}
           <Stack.Screen
             name="InvestmentForm"
             component={InvestmentFormScreen}
@@ -282,5 +298,5 @@ export const AppNavigator: React.FC = () => {
         </>
       )}
     </Stack.Navigator>
-  )
-}
+  );
+};

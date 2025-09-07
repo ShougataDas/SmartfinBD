@@ -17,7 +17,7 @@ import {
 
 export const createMockUser = (): User => {
   return {
-    id: "mock_user_123",
+    _id: "mock_user_123",
     name: "John Doe",
     email: "john.doe@example.com",
     phone: "+8801712345678",
@@ -80,7 +80,7 @@ export const createMockPortfolio = (userId: string): Portfolio => {
       id: "inv_sanchayapatra_001",
       userId: userId,
       name: "5-Year Sanchayapatra",
-      type: InvestmentType.Sanchayapatra,
+      type: InvestmentType.SANCHAYAPATRA_PORIBAR,
       amount: 100000,
       currentValue: 108500,
       expectedReturn: 8.5,

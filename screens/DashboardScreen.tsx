@@ -1,71 +1,84 @@
-"use client"
+"use client";
 
-import { useFocusEffect, useNavigation } from "@react-navigation/native"
-import React, { useState } from "react"
-import { Alert, RefreshControl, ScrollView, StyleSheet, View } from "react-native"
-import { Button, Card, Chip, FAB, Surface, Text } from "react-native-paper"
-import Icon from "react-native-vector-icons/MaterialCommunityIcons"
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import React, { useState } from "react";
+import {
+  Alert,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import { Button, Card, Chip, FAB, Surface, Text } from "react-native-paper";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 // import { PortfolioChart } from '@/components/charts/PortfolioChart';
-import { FinancialMetrics } from "@/components/dashboard/FinancialMetrics"
-import { spacing, theme } from "@/constants/theme"
-import { InvestmentRecommendationService } from "@/services/investmentRecommendation"
-import { useUserStore } from "@/store/userStore"
-import { formatCurrency, formatPercentage } from "@/utils/formatters"
-import type { Investment } from "@/types"
+import { FinancialMetrics } from "@/components/dashboard/FinancialMetrics";
+import { spacing, theme } from "@/constants/theme";
+import { InvestmentRecommendationService } from "@/services/investmentRecommendation";
+import { useUserStore } from "@/store/userStore";
+import { formatCurrency, formatPercentage } from "@/utils/formatters";
+import type { Investment, Portfolio } from "@/types";
 
 const DashboardScreen: React.FC = () => {
-  const navigation = useNavigation()
-  const { user, financialProfile, riskAssessment, recommendations, isLoading, refreshUserData } = useUserStore()
+  const navigation = useNavigation();
+  const {
+    user,
+    financialProfile,
+    riskAssessment,
+    recommendations,
+    isLoading,
+    refreshUserData,
+    portfolio,
+  } = useUserStore();
 
-  const investments = useUserStore((state) => state.investments)
-
-  const [refreshing, setRefreshing] = useState(false)
-  const [selectedChartType, setSelectedChartType] = useState<"pie" | "performance" | "growth">("pie")
-
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedChartType, setSelectedChartType] = useState<
+    "pie" | "performance" | "growth"
+  >("pie");
   useFocusEffect(
     React.useCallback(() => {
-      refreshUserData()
-    }, []),
-  )
+      refreshUserData();
+    }, [])
+  );
 
   const onRefresh = async () => {
-    setRefreshing(true)
+    setRefreshing(true);
     try {
-      await refreshUserData()
+      await refreshUserData();
     } catch (error) {
-      Alert.alert("রিফ্রেশ ব্যর্থ", "ডেটা আপডেট করতে সমস্যা হয়েছে।")
+      Alert.alert("রিফ্রেশ ব্যর্থ", "ডেটা আপডেট করতে সমস্যা হয়েছে।");
     } finally {
-      setRefreshing(false)
+      setRefreshing(false);
     }
-  }
+  };
 
   const handleQuickAction = (action: string) => {
     switch (action) {
       case "add_investment":
-        navigation.navigate("Investment" as never)
-        break
+        navigation.navigate("Investment" as never);
+        break;
       case "view_recommendations":
-        navigation.navigate("Recommendations" as never)
-        break
+        navigation.navigate("Recommendations" as never);
+        break;
       case "financial_profile":
-        navigation.navigate("FinancialProfile" as never)
-        break
+        navigation.navigate("FinancialProfile" as never);
+        break;
       case "risk_assessment":
-        navigation.navigate("RiskAssessment" as never)
-        break
+        navigation.navigate("RiskAssessment" as never);
+        break;
       default:
-        break
+        break;
     }
-  }
+  };
 
   const getGreeting = (): string => {
-    const hour = new Date().getHours()
-    if (hour < 12) return "সুপ্রভাত"
-    if (hour < 17) return "শুভ দুপুর"
-    if (hour < 21) return "শুভ সন্ধ্যা"
-    return "শুভ রাত্রি"
-  }
+    const hour = new Date().getHours();
+    if (hour < 12) return "সুপ্রভাত";
+    if (hour < 17) return "শুভ দুপুর";
+    if (hour < 21) return "শুভ সন্ধ্যা";
+    return "শুভ রাত্রি";
+  };
 
   const renderWelcomeCard = () => (
     <Card style={styles.welcomeCard}>
@@ -98,7 +111,11 @@ const DashboardScreen: React.FC = () => {
                 </Button>
               )}
               {!riskAssessment && (
-                <Button mode="outlined" onPress={() => handleQuickAction("risk_assessment")} style={styles.setupButton}>
+                <Button
+                  mode="outlined"
+                  onPress={() => handleQuickAction("risk_assessment")}
+                  style={styles.setupButton}
+                >
                   ঝুঁকি মূল্যায়ন
                 </Button>
               )}
@@ -107,7 +124,7 @@ const DashboardScreen: React.FC = () => {
         )}
       </Card.Content>
     </Card>
-  )
+  );
 
   const renderQuickActions = () => (
     <Card style={styles.quickActionsCard}>
@@ -117,28 +134,40 @@ const DashboardScreen: React.FC = () => {
         </Text>
 
         <View style={styles.quickActionsGrid}>
-          <Surface style={styles.quickActionItem} onTouchEnd={() => handleQuickAction("add_investment")}>
+          <Surface
+            style={styles.quickActionItem}
+            onTouchEnd={() => handleQuickAction("add_investment")}
+          >
             <Icon name="plus-circle" size={32} color={theme.colors.primary} />
             <Text variant="bodyMedium" style={styles.quickActionText}>
               নতুন বিনিয়োগ
             </Text>
           </Surface>
 
-          <Surface style={styles.quickActionItem} onTouchEnd={() => handleQuickAction("view_recommendations")}>
+          <Surface
+            style={styles.quickActionItem}
+            onTouchEnd={() => handleQuickAction("view_recommendations")}
+          >
             <Icon name="lightbulb" size={32} color={theme.colors.secondary} />
             <Text variant="bodyMedium" style={styles.quickActionText}>
               সুপারিশ দেখুন
             </Text>
           </Surface>
 
-          <Surface style={styles.quickActionItem} onTouchEnd={() => navigation.navigate("Chat" as never)}>
+          <Surface
+            style={styles.quickActionItem}
+            onTouchEnd={() => navigation.navigate("Chat" as never)}
+          >
             <Icon name="robot" size={32} color={theme.colors.tertiary} />
             <Text variant="bodyMedium" style={styles.quickActionText}>
               AI সহায়তা
             </Text>
           </Surface>
 
-          <Surface style={styles.quickActionItem} onTouchEnd={() => navigation.navigate("Profile" as never)}>
+          <Surface
+            style={styles.quickActionItem}
+            onTouchEnd={() => navigation.navigate("Profile" as never)}
+          >
             <Icon name="account-cog" size={32} color={theme.colors.outline} />
             <Text variant="bodyMedium" style={styles.quickActionText}>
               সেটিংস
@@ -147,14 +176,14 @@ const DashboardScreen: React.FC = () => {
         </View>
       </Card.Content>
     </Card>
-  )
+  );
 
   const renderRecommendations = () => {
     if (!recommendations || recommendations.length === 0) {
-      return null
+      return null;
     }
 
-    const topRecommendations = recommendations.slice(0, 3)
+    const topRecommendations = recommendations.slice(0, 3);
 
     return (
       <Card style={styles.recommendationsCard}>
@@ -163,7 +192,10 @@ const DashboardScreen: React.FC = () => {
             <Text variant="titleMedium" style={styles.sectionTitle}>
               আপনার জন্য সুপারিশ
             </Text>
-            <Button mode="text" onPress={() => handleQuickAction("view_recommendations")}>
+            <Button
+              mode="text"
+              onPress={() => handleQuickAction("view_recommendations")}
+            >
               সব দেখুন
             </Button>
           </View>
@@ -172,7 +204,11 @@ const DashboardScreen: React.FC = () => {
             <View key={rec.id} style={styles.recommendationItem}>
               <View style={styles.recommendationContent}>
                 <Text variant="titleSmall" style={styles.recommendationTitle}>
-                  {InvestmentRecommendationService.getInvestmentDetails(rec.investmentType)?.name}
+                  {
+                    InvestmentRecommendationService.getInvestmentDetails(
+                      rec.investmentType
+                    )?.name
+                  }
                 </Text>
                 <Text variant="bodySmall" style={styles.recommendationAmount}>
                   সুপারিশকৃত: {formatCurrency(rec.recommendedAmount)}
@@ -181,19 +217,27 @@ const DashboardScreen: React.FC = () => {
                   প্রত্যাশিত রিটার্ন: {rec.expectedReturn}%
                 </Text>
               </View>
-              <Chip mode="outlined" style={styles.suitabilityChip} textStyle={{ fontSize: 10 }}>
+              <Chip
+                mode="outlined"
+                style={styles.suitabilityChip}
+                textStyle={{ fontSize: 10 }}
+              >
                 {rec.suitabilityScore}% উপযুক্ত
               </Chip>
             </View>
           ))}
         </Card.Content>
       </Card>
-    )
-  }
+    );
+  };
 
   const renderChartSelector = () => (
     <View style={styles.chartSelector}>
-      <Chip selected={selectedChartType === "pie"} onPress={() => setSelectedChartType("pie")} style={styles.chartChip}>
+      <Chip
+        selected={selectedChartType === "pie"}
+        onPress={() => setSelectedChartType("pie")}
+        style={styles.chartChip}
+      >
         বিতরণ
       </Chip>
       <Chip
@@ -211,27 +255,29 @@ const DashboardScreen: React.FC = () => {
         বৃদ্ধি
       </Chip>
     </View>
-  )
+  );
 
   const getChartTitle = (): string => {
     switch (selectedChartType) {
       case "pie":
-        return "পোর্টফোলিও বিতরণ"
+        return "পোর্টফোলিও বিতরণ";
       case "performance":
-        return "বিনিয়োগ পারফরম্যান্স"
+        return "বিনিয়োগ পারফরম্যান্স";
       case "growth":
-        return "বৃদ্ধির প্রজেকশন"
+        return "বৃদ্ধির প্রজেকশন";
       default:
-        return "পোর্টফোলিও চার্ট"
+        return "পোর্টফোলিও চার্ট";
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {/* Welcome Card */}
         {renderWelcomeCard()}
@@ -240,10 +286,15 @@ const DashboardScreen: React.FC = () => {
         {renderQuickActions()}
 
         {/* Financial Metrics */}
-        {financialProfile && <FinancialMetrics investments={investments} financialProfile={financialProfile} />}
+        {financialProfile && (
+          <FinancialMetrics
+            financialProfile={financialProfile}
+            portfolio={portfolio as Portfolio}
+          />
+        )}
 
         {/* Portfolio Chart */}
-        {investments.length > 0 && (
+        {portfolio && portfolio.investments.length > 0 && (
           <>
             {renderChartSelector()}
             {/* <PortfolioChart
@@ -258,76 +309,99 @@ const DashboardScreen: React.FC = () => {
         {renderRecommendations()}
 
         {/* Recent Investments */}
-        {investments.length > 0 && (
+        {portfolio && portfolio.investments.length > 0 && (
           <Card style={styles.recentInvestmentsCard}>
             <Card.Content>
               <View style={styles.recentInvestmentsHeader}>
                 <Text variant="titleMedium" style={styles.sectionTitle}>
                   সাম্প্রতিক বিনিয়োগ
                 </Text>
-                <Button mode="text" onPress={() => navigation.navigate("Investment" as never)}>
-                  সব দেখুন
-                </Button>
               </View>
 
-              {investments.slice(0, 3).map((investment: Investment) => (
-                <View key={investment.id} style={styles.investmentItem}>
-                  <View style={styles.investmentContent}>
-                    <Text variant="titleSmall" style={styles.investmentName}>
-                      {investment.name}
-                    </Text>
-                    <Text variant="bodySmall" style={styles.investmentAmount}>
-                      {formatCurrency(investment.currentValue)}
-                    </Text>
-                  </View>
-                  <View style={styles.investmentReturn}>
-                    <Text
-                      variant="bodySmall"
-                      style={[
-                        styles.returnText,
-                        {
-                          color: investment.currentValue >= investment.amount ? "#4CAF50" : "#F44336",
-                        },
-                      ]}
-                    >
-                      {formatPercentage((investment.currentValue - investment.amount) / investment.amount)}
-                    </Text>
-                  </View>
-                </View>
-              ))}
+              {portfolio.investments.slice(0, 5).map(
+                (investment: Investment) =>
+                  portfolio && (
+                    <View key={investment._id} style={styles.investmentItem}>
+                      <View style={styles.investmentContent}>
+                        <Text
+                          variant="titleSmall"
+                          style={styles.investmentName}
+                        >
+                          {investment.type}
+                        </Text>
+                        <Text
+                          variant="bodySmall"
+                          style={styles.investmentAmount}
+                        >
+                          {formatCurrency(investment.total)}
+                        </Text>
+                      </View>
+                      <View style={styles.investmentReturn}>
+                        <Text
+                          variant="bodySmall"
+                          style={[
+                            styles.returnText,
+                            {
+                              color:
+                                investment.total >= investment.investAmount
+                                  ? "#4CAF50"
+                                  : "#F44336",
+                            },
+                          ]}
+                        >
+                          {formatPercentage(
+                            (investment.total - investment.investAmount) /
+                              investment.investAmount
+                          )}
+                        </Text>
+                      </View>
+                    </View>
+                  )
+              )}
             </Card.Content>
           </Card>
         )}
 
         {/* Empty State */}
-        {investments.length === 0 && financialProfile && (
-          <Card style={styles.emptyStateCard}>
-            <Card.Content style={styles.emptyStateContent}>
-              <Icon name="chart-line" size={64} color={theme.colors.outline} />
-              <Text variant="headlineSmall" style={styles.emptyStateTitle}>
-                আপনার বিনিয়োগ যাত্রা শুরু করুন
-              </Text>
-              <Text variant="bodyMedium" style={styles.emptyStateText}>
-                আমাদের AI-চালিত সুপারিশের সাহায্যে স্মার্ট বিনিয়োগ করুন
-              </Text>
-              <Button
-                mode="contained"
-                onPress={() => handleQuickAction("view_recommendations")}
-                style={styles.emptyStateButton}
-                icon="lightbulb"
-              >
-                সুপারিশ দেখুন
-              </Button>
-            </Card.Content>
-          </Card>
-        )}
+        {portfolio &&
+          portfolio.investments.length === 0 &&
+          financialProfile && (
+            <Card style={styles.emptyStateCard}>
+              <Card.Content style={styles.emptyStateContent}>
+                <Icon
+                  name="chart-line"
+                  size={64}
+                  color={theme.colors.outline}
+                />
+                <Text variant="headlineSmall" style={styles.emptyStateTitle}>
+                  আপনার বিনিয়োগ যাত্রা শুরু করুন
+                </Text>
+                <Text variant="bodyMedium" style={styles.emptyStateText}>
+                  আমাদের AI-চালিত সুপারিশের সাহায্যে স্মার্ট বিনিয়োগ করুন
+                </Text>
+                <Button
+                  mode="contained"
+                  onPress={() => handleQuickAction("view_recommendations")}
+                  style={styles.emptyStateButton}
+                  icon="lightbulb"
+                >
+                  সুপারিশ দেখুন
+                </Button>
+              </Card.Content>
+            </Card>
+          )}
       </ScrollView>
 
       {/* Floating Action Button */}
-      <FAB icon="plus" style={styles.fab} onPress={() => handleQuickAction("add_investment")} label="বিনিয়োগ" />
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={() => handleQuickAction("add_investment")}
+        label="বিনিয়োগ"
+      />
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -513,6 +587,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: theme.colors.primary,
   },
-})
+});
 
-export default DashboardScreen
+export default DashboardScreen;
