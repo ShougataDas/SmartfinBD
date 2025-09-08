@@ -157,6 +157,7 @@ export const RegisterScreen: React.FC = () => {
       }
       navigation.navigate("Login" as never);
     } catch (error) {
+      console.error("Error registering:", error);
       Alert.alert(
         "রেজিস্ট্রেশন ব্যর্থ",
         "অ্যাকাউন্ট তৈরি করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।",

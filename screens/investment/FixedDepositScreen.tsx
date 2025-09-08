@@ -10,7 +10,7 @@ import {
   TextInput,
   Alert,
 } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useRoute } from "@react-navigation/native";
 import { investmentOptions } from "@/data/investmentData";
 import { formatCurrency } from "@/utils/formatters";
 import { theme } from "@/constants/theme";
@@ -18,7 +18,7 @@ import { InvestmentType } from "@/types";
 import { useUserStore } from "@/store/userStore";
 
 export default function FixedDepositScreen() {
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
   const route = useRoute();
   const investmentId = (route.params as { investmentId?: string } | undefined)
     ?.investmentId;
@@ -61,6 +61,7 @@ export default function FixedDepositScreen() {
       await addInvestment(newInvestment);
       Alert.alert("সফল", "আপনার ফিক্সড ডিপোজিট সফল হয়েছে!");
     } catch (error) {
+      console.error("Error adding investment:", error);
       Alert.alert("ত্রুটি", "আপনার ফিক্সড ডিপোজিট সফল হয়েছে!");
     }
   };

@@ -9,13 +9,21 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { Button, Card, Chip, FAB, Surface, Text } from "react-native-paper";
+import {
+  Button,
+  Card,
+  Chip,
+  FAB,
+  Surface,
+  Text,
+  ActivityIndicator,
+} from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 // import { PortfolioChart } from '@/components/charts/PortfolioChart';
 import { FinancialMetrics } from "@/components/dashboard/FinancialMetrics";
 import { spacing, theme } from "@/constants/theme";
-import { InvestmentRecommendationService } from "@/services/investmentRecommendation";
+// import { InvestmentRecommendationService } from "@/services/investmentRecommendation";
 import { useUserStore } from "@/store/userStore";
 import { formatCurrency, formatPercentage } from "@/utils/formatters";
 import type { Investment, Portfolio } from "@/types";
@@ -39,6 +47,7 @@ const DashboardScreen: React.FC = () => {
   useFocusEffect(
     React.useCallback(() => {
       refreshUserData();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   );
 
@@ -48,6 +57,7 @@ const DashboardScreen: React.FC = () => {
       await refreshUserData();
     } catch (error) {
       Alert.alert("রিফ্রেশ ব্যর্থ", "ডেটা আপডেট করতে সমস্যা হয়েছে।");
+      console.error("Error refreshing user data:", error);
     } finally {
       setRefreshing(false);
     }
@@ -183,7 +193,7 @@ const DashboardScreen: React.FC = () => {
       return null;
     }
 
-    const topRecommendations = recommendations.slice(0, 3);
+    // const topRecommendations = recommendations.slice(0, 3);
 
     return (
       <Card style={styles.recommendationsCard}>
@@ -257,18 +267,29 @@ const DashboardScreen: React.FC = () => {
     </View>
   );
 
-  const getChartTitle = (): string => {
-    switch (selectedChartType) {
-      case "pie":
-        return "পোর্টফোলিও বিতরণ";
-      case "performance":
-        return "বিনিয়োগ পারফরম্যান্স";
-      case "growth":
-        return "বৃদ্ধির প্রজেকশন";
-      default:
-        return "পোর্টফোলিও চার্ট";
-    }
-  };
+  // const getChartTitle = (): string => {
+  //   switch (selectedChartType) {
+  //     case "pie":
+  //       return "পোর্টফোলিও বিতরণ";
+  //     case "performance":
+  //       return "বিনিয়োগ পারফরম্যান্স";
+  //     case "growth":
+  //       return "বৃদ্ধির প্রজেকশন";
+  //     default:
+  //       return "পোর্টফোলিও চার্ট";
+  //   }
+  // };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <Text variant="bodyMedium" style={styles.loadingText}>
+          ডেটা লোড হচ্ছে...
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -407,6 +428,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: theme.colors.background,
+  },
+  loadingText: {
+    marginTop: spacing.md,
+    color: theme.colors.onSurface,
   },
   scrollView: {
     flex: 1,

@@ -4,7 +4,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 import type { LoginForm, RegisterForm } from "@/types";
 import { BiometricService } from "@/services/biometricService";
-import { navigate } from "expo-router/build/global-state/routing";
 import { getApiUrl, API_CONFIG } from "@/constants/config";
 import { useUserStore } from "./userStore";
 
