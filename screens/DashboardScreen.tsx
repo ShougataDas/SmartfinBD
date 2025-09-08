@@ -199,7 +199,7 @@ const DashboardScreen: React.FC = () => {
               সব দেখুন
             </Button>
           </View>
-
+          {/* 
           {topRecommendations.map((rec, index) => (
             <View key={rec.id} style={styles.recommendationItem}>
               <View style={styles.recommendationContent}>
@@ -225,7 +225,7 @@ const DashboardScreen: React.FC = () => {
                 {rec.suitabilityScore}% উপযুক্ত
               </Chip>
             </View>
-          ))}
+          ))} */}
         </Card.Content>
       </Card>
     );

@@ -121,7 +121,7 @@ export const useAuthStore = create<AuthStore>()(
           if (userData.password !== userData.confirmPassword) {
             throw new Error("Passwords do not match");
           }
-          console.log("userData", userData);
+
           const response = await fetch(
             getApiUrl(API_CONFIG.ENDPOINTS.AUTH.REGISTER),
             {
@@ -138,8 +138,9 @@ export const useAuthStore = create<AuthStore>()(
               }),
             }
           );
+          console.log("response", response);
           const { data } = await response.json();
-
+          console.log("data", data);
           if (data) {
             const capability =
               await BiometricService.checkBiometricCapability();
