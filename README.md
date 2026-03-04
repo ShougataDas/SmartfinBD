@@ -1,50 +1,104 @@
-# Welcome to your Expo app 👋
+# SmartFinBD - AI-Powered Investment Mentor for Bangladesh 🇧🇩
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> **SmartFinBD** is a cross-platform mobile application designed to democratize financial planning for individuals in Bangladesh. By combining modern financial analytics with AI-driven personalization, the app helps users assess their financial health, generate personalized investment plans, and receive guidance via a bilingual AI chatbot.
 
-## Get started
+**🔗 Backend Repository:** [smartfinbd-backend](https://github.com/midul9797/smartfinbd-backend)
 
-1. Install dependencies
+---
 
+## 📱 Project Overview
+
+In Bangladesh, many individuals face challenges in planning their investments due to limited access to personalized financial advisory services. SmartFinBD bridges this gap by providing an intuitive mobile interface that combines local market insights with AI-powered guidance.
+
+### Key Features
+
+* **🤖 Bilingual AI Chatbot:** A financial assistant capable of conversing in both Bengali and English to answer user queries
+* **📊 Interactive Dashboard:** Real-time visualization of investment growth, financial health, and asset allocation using dynamic charts
+* **💼 Personalized Investment Plans:** AI-generated recommendations for government bonds, mutual funds, DPS, and the stock market tailored to the user's risk profile
+* **🔐 Biometric Authentication:** Secure login integration using fingerprint scanning
+* **📉 Risk Assessment:** Algorithms to evaluate user data (age, income, goals) and determine risk tolerance
+
+---
+
+## 🛠️ Tech Stack (Frontend)
+
+This repository contains the **Frontend** source code, built with a focus on performance and cross-platform compatibility.
+
+* **Framework:** React Native (TypeScript)
+* **Navigation:** React Navigation
+* **State Management:** Redux Toolkit
+* **Data Visualization:** Victory Native / Recharts
+* **API Integration:** Axios (connecting to Node.js/Firebase backend)
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to set up the project locally on your machine.
+
+### Prerequisites
+
+* Node.js (v14 or higher)
+* npm or yarn
+* Android Studio (for Android Emulator)
+* Xcode (for iOS Simulator - Mac only)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/ShougataDas/SmartfinBD.git
+   cd SmartfinBD
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
+   # or
+   yarn install
    ```
 
-2. Start the app
-
-   ```bash
-   npx expo start
+3. **Environment Setup**
+   
+   Create a `.env` file in the root directory and add your backend API URL and other keys:
+   ```env
+   API_URL=http://localhost:5000/api
    ```
 
-In the output, you'll find options to open the app in a
+4. **Run the Application**
+   
+   * **Android:**
+     ```bash
+     npx react-native run-android
+     ```
+   
+   * **iOS:**
+     ```bash
+     cd ios && pod install && cd ..
+     npx react-native run-ios
+     ```
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 👥 Contributors
 
-## Get a fresh project
+This project was developed for the **Mobile App Development (CSE 464)** course at **East Delta University**.
 
-When you're ready, run:
+* **Shougata Das** - Frontend Development
+* **Moklasur Rahman** - Backend Integration
 
-```bash
-npm run reset-project
-```
+---
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 📄 License
 
-## Learn more
+This project is licensed under the MIT License.
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 🤝 Contributing
 
-## Join the community
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/ShougataDas/SmartfinBD/issues).
 
-Join our community of developers creating universal apps.
+## 📧 Contact
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+For questions or feedback, please reach out to the project maintainers through GitHub.
